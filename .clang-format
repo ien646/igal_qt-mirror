@@ -1,0 +1,27 @@
+---
+BasedOnStyle: Microsoft
+AccessModifierOffset: -4
+AlignAfterOpenBracket: AlwaysBreak
+AllowAllArgumentsOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortFunctionsOnASingleLine: InlineOnly
+AllowShortLoopsOnASingleLine: true
+AlwaysBreakTemplateDeclarations: Yes
+BinPackArguments: false
+BinPackParameters: false
+BreakConstructorInitializers: BeforeComma
+BreakInheritanceList: BeforeComma
+Cpp11BracedListStyle: false
+EmptyLineBeforeAccessModifier: Always
+IndentPPDirectives: BeforeHash
+KeepEmptyLinesAtTheStartOfBlocks: false
+NamespaceIndentation: All
+PenaltyBreakAssignment: 10000
+PenaltyBreakFirstLessLess: 121
+PenaltyExcessCharacter: 500
+PenaltyIndentedWhitespace: 1000
+PenaltyReturnTypeOnItsOwnLine: 10000
+PointerAlignment: Left
+QualifierAlignment: Left
+AllowAllConstructorInitializersOnNextLine: false
+ConstructorInitializerAllOnOneLineOrOnePerLine: false
