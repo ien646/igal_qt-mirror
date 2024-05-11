@@ -3,6 +3,8 @@
 #include <QLabel>
 #include <QMouseEvent>
 
+#include "Utils.hpp"
+
 VideoControls::VideoControls(QWidget* parent)
     : QWidget(parent)
 {
@@ -21,14 +23,14 @@ VideoControls::VideoControls(QWidget* parent)
     _pause_label = new QLabel(this);
     _volume_label = new QLabel(this);
 
-    _seek_position_label->setFont(QFont("Pokemon Classic", 8));
+    _seek_position_label->setFont(getTextFont());
     _seek_position_label->setStyleSheet("QLabel{color:#ffffff;}");
-    _seek_position_label->setText("00:00:00");
+    _seek_position_label->setText("00*00*00");
 
     _seek_slider->setMinimum(0);
     _seek_slider->setMaximum(1000);
 
-    _volume_label->setFont(QFont("Pokemon Classic", 8));
+    _volume_label->setFont(getTextFont());
     _volume_slider->setMinimum(0);
     _volume_slider->setMaximum(100);
     _volume_slider->setMaximumWidth(100);
@@ -122,6 +124,11 @@ void VideoControls::setCurrentVideoPosition(int64_t posMs)
 {
     _seek_slider->setSliderPosition((static_cast<float>(posMs) / _current_video_duration) * _seek_slider->maximum());
     updateSeekLabel(posMs);
+}
+
+void VideoControls::setCurrentVolume(int percent)
+{
+    _volume_slider->setSliderPosition(percent);
 }
 
 void VideoControls::updateButtonStyles()

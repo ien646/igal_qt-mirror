@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QFont>
 #include <QImage>
 #include <QMediaPlayer>
 #include <QMovie>
@@ -26,3 +27,5 @@ enum class CopyFileToLinkDirResult
 [[nodiscard]] CopyFileToLinkDirResult copyFileToLinkDir(const std::string& file, const std::string& linkDir);
 
 std::string getFileInfoString(const std::string& file, std::variant<const QImage*, const QMovie*, const QMediaPlayer*> currentSource);
+
+const QFont& getTextFont(int size = 8);

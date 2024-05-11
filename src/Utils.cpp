@@ -8,7 +8,6 @@
 #include <QMediaMetaData>
 
 #include <filesystem>
-#include <format>
 #include <sstream>
 #include <unordered_set>
 
@@ -187,7 +186,7 @@ std::string getFileInfoString(
     else if (std::holds_alternative<const QMediaPlayer*>(currentSource))
     {
         const QMediaPlayer* player = std::get<const QMediaPlayer*>(currentSource);
-        if(!player->videoTracks().isEmpty())
+        if (!player->videoTracks().isEmpty())
         {
             const auto resolution = player->videoTracks()[0].value(QMediaMetaData::Resolution).toSize();
             sstr << "Dimensions: " << resolution.width() << "x" << resolution.height() << "\n";
@@ -195,4 +194,15 @@ std::string getFileInfoString(
     }
 
     return sstr.str();
+}
+
+const QFont& getTextFont(int size)
+{
+    static const QFont font = [&] -> QFont {
+        QFont result("Johto Mono", size);
+        result.setStyleHint(QFont::TypeWriter, QFont::StyleStrategy::NoAntialias);
+        return result;
+    }();
+
+    return font;
 }

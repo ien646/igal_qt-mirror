@@ -19,7 +19,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 public:
     MainWindow(const std::string& target_path);
-
+    
     void keyPressEvent(QKeyEvent* ev) override;
 
 signals:
@@ -43,4 +43,5 @@ private:
     void loadLinks();
     void toggleCurrentFileInfo();
     void updateCurrentFileInfo();
+    void processCopyToLinkKey(QKeyEvent* ev);
 };

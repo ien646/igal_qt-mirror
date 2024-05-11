@@ -101,12 +101,29 @@ void MediaWidget::hideInfo()
     _info_overlay->hideInfo();
 }
 
+void MediaWidget::toggleMute()
+{
+    QAudioOutput* audioOutput = _video_player->audioOutput();
+
+    if(!audioOutput->isMuted())
+    {
+        _volume_before_mute = audioOutput->volume();
+        audioOutput->setVolume(0);
+        audioOutput->setMuted(true);
+    }
+    else
+    {
+        audioOutput->setVolume(_volume_before_mute);
+        audioOutput->setMuted(false);
+    }
+}
+
 void MediaWidget::paintEvent(QPaintEvent* ev)
 {
     if (!std::filesystem::exists(_target))
     {
         QPainter painter(this);
-        painter.setFont(QFont("Pokemon Classic", 24));
+        painter.setFont(getTextFont(24));
         painter.setBrush(QBrush(QColor("#CCDD00")));
         painter.setPen(QColor("#CCDD00"));
         painter.drawText(QPoint(16, 48), "No media");

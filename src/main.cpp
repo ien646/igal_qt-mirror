@@ -20,6 +20,7 @@ int main(int argc, char** argv)
     }
 
     QFontDatabase::addApplicationFont(":/Pokemon Classic.ttf");
+    QFontDatabase::addApplicationFont(":/JohtoMono-Regular.otf");
 
     MainWindow window(path);
     window.show();

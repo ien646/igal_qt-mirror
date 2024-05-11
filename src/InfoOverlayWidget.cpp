@@ -3,6 +3,8 @@
 #include <QCommonStyle>
 #include <QGraphicsDropShadowEffect>
 
+#include "Utils.hpp"
+
 InfoOverlayWidget::InfoOverlayWidget(QWidget* parent)
     : QWidget(parent)
 {
@@ -22,14 +24,14 @@ InfoOverlayWidget::InfoOverlayWidget(QWidget* parent)
         "margin:0px; outline-style:solid; outline-color:#000000; outline-width:1px;}}";
 
     _message_label->setAlignment(Qt::AlignmentFlag::AlignTop);
-    _message_label->setFont(QFont("Pokemon Classic", 8));
+    _message_label->setFont(getTextFont());
     _message_label->setStyleSheet(QString::fromStdString(std::format(stylesheetFormat, "rgba(0, 150, 100, 150)")));
     _message_label->setFocusPolicy(Qt::FocusPolicy::NoFocus);
     _message_label->setAttribute(Qt::WidgetAttribute::WA_TransparentForMouseEvents);
     _message_label->setWordWrap(true);
 
     _info_label->setAlignment(Qt::AlignmentFlag::AlignTop);
-    _info_label->setFont(QFont("Pokemon Classic", 8));
+    _info_label->setFont(getTextFont());
     _info_label->setStyleSheet(QString::fromStdString(std::format(stylesheetFormat, "rgba(0, 64, 128, 150)")));
     _info_label->setFocusPolicy(Qt::FocusPolicy::NoFocus);
     _info_label->setAttribute(Qt::WidgetAttribute::WA_TransparentForMouseEvents);

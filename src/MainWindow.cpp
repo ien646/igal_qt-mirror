@@ -69,6 +69,35 @@ MainWindow::MainWindow(const std::string& target_path)
     connect(this, &MainWindow::currentIndexChanged, this, [this] { updateCurrentFileInfo(); });
 }
 
+void MainWindow::processCopyToLinkKey(QKeyEvent* ev)
+{
+    for (const auto& [key, dir] : _links)
+    {
+        if (ev->key() == key)
+        {
+            auto copyResult = copyFileToLinkDir(_fileList[_currentIndex].path, dir);
+            switch (copyResult)
+            {
+            case CopyFileToLinkDirResult::CreatedNew:
+                _mediaWidget->showMessage("Copy succesful! (new)");
+                break;
+            case CopyFileToLinkDirResult::Overwriten:
+                _mediaWidget->showMessage("Copy succesful! (overwrite)");
+                break;
+            case CopyFileToLinkDirResult::SourceFileNotFound:
+                _mediaWidget->showMessage("Copy failed! (source not found)");
+                break;
+            case CopyFileToLinkDirResult::TargetDirNotFound:
+                _mediaWidget->showMessage("Copy failed! (target dir not found)");
+                break;
+            case CopyFileToLinkDirResult::Error:
+                _mediaWidget->showMessage("Copy failed! (error)");
+                break;
+            }
+        }
+    }
+}
+
 void MainWindow::keyPressEvent(QKeyEvent* ev)
 {
     const auto ctrl = ev->modifiers().testFlag(Qt::KeyboardModifier::ControlModifier);
@@ -101,35 +130,14 @@ void MainWindow::keyPressEvent(QKeyEvent* ev)
     case Qt::Key_I:
         toggleCurrentFileInfo();
         break;
+    case Qt::Key_M:
+        _mediaWidget->toggleMute();
+        break;
     }
 
     if (ctrl && shift && !_fileList.empty())
     {
-        for (const auto& [key, dir] : _links)
-        {
-            if (ev->key() == key)
-            {
-                auto copyResult = copyFileToLinkDir(_fileList[_currentIndex].path, dir);
-                switch (copyResult)
-                {
-                case CopyFileToLinkDirResult::CreatedNew:
-                    _mediaWidget->showMessage("Copy succesful! (new)");
-                    break;
-                case CopyFileToLinkDirResult::Overwriten:
-                    _mediaWidget->showMessage("Copy succesful! (overwrite)");
-                    break;
-                case CopyFileToLinkDirResult::SourceFileNotFound:
-                    _mediaWidget->showMessage("Copy failed! (source not found)");
-                    break;
-                case CopyFileToLinkDirResult::TargetDirNotFound:
-                    _mediaWidget->showMessage("Copy failed! (target dir not found)");
-                    break;
-                case CopyFileToLinkDirResult::Error:
-                    _mediaWidget->showMessage("Copy failed! (error)");
-                    break;
-                }
-            }
-        }
+        processCopyToLinkKey(ev);
     }
 }
 

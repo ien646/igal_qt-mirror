@@ -19,6 +19,8 @@ public:
     void setCurrentVideoDuration(int64_t ms);
     void setCurrentVideoPosition(int64_t posMs);
 
+    void setCurrentVolume(int percent);
+
 signals:
     void playClicked();
     void pauseClicked();

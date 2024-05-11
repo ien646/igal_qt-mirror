@@ -28,11 +28,12 @@ public:
 
     void setMedia(const std::string& source);
 
-    std::variant<const QImage*, const QMovie*, const QMediaPlayer*> currentMediaSource();
+    std::variant<const QImage*, const QMovie*, const QMediaPlayer*> currentMediaSource();    
     bool isInfoShown();
     void showMessage(const QString& message);
     void showInfo(const QString& info);
     void hideInfo();
+    void toggleMute();
 
     void paintEvent(QPaintEvent* ev) override;
     void resizeEvent(QResizeEvent* ev) override;
@@ -40,6 +41,7 @@ public:
 private:
     std::string _target;
     bool _is_video;
+    float _volume_before_mute;
 
     QStackedLayout* _main_layout = nullptr;
 

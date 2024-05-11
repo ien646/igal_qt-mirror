@@ -21,6 +21,7 @@ VideoPlayerWidget::VideoPlayerWidget(QWidget* parent)
 
     _media_player = new QMediaPlayer(this);
     _audio_output = new QAudioOutput(this);
+    _audio_output->setVolume(0.5f);
 
     setAlignment(Qt::AlignmentFlag::AlignCenter);
 
@@ -84,7 +85,11 @@ VideoPlayerWidget::VideoPlayerWidget(QWidget* parent)
             _video_controls->setCurrentVideoPosition(pos);
         }
     });
-
+    
+    connect(_audio_output, &QAudioOutput::volumeChanged, this, [this](float volume){
+        _video_controls->setCurrentVolume(volume * 100);
+    });
+    
     _timer = new QTimer(this);
     _timer->setSingleShot(true);
 
@@ -142,7 +147,12 @@ void VideoPlayerWidget::mouseReleaseEvent(QMouseEvent* ev)
     _timer->start();
 }
 
-const QMediaPlayer* VideoPlayerWidget::mediaPlayer()
+QMediaPlayer* VideoPlayerWidget::mediaPlayer()
 {
     return _media_player;
+}
+
+QAudioOutput* VideoPlayerWidget::audioOutput()
+{
+    return _audio_output;
 }
