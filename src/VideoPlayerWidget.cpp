@@ -141,3 +141,8 @@ void VideoPlayerWidget::mouseReleaseEvent(QMouseEvent* ev)
     _video_controls->show();
     _timer->start();
 }
+
+const QMediaPlayer* VideoPlayerWidget::mediaPlayer()
+{
+    return _media_player;
+}

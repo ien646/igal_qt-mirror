@@ -1,6 +1,9 @@
 #include "MainWindow.hpp"
 
 #include <ien/fs_utils.hpp>
+#include <ien/io_utils.hpp>
+#include <ien/platform.hpp>
+#include <ien/str_utils.hpp>
 
 #include <filesystem>
 
@@ -11,35 +14,35 @@ MainWindow::MainWindow(const std::string& target_path)
     setFocusPolicy(Qt::FocusPolicy::StrongFocus);
     setMinimumSize(600, 400);
 
-    _main_widget = new QWidget(this);
-    setCentralWidget(_main_widget);
-    _main_widget->setStyleSheet("QWidget{background-color:#000000;}");
+    _mainWidget = new QWidget(this);
+    setCentralWidget(_mainWidget);
+    _mainWidget->setStyleSheet("QWidget{background-color:#000000;}");
 
-    _media_layout = new QStackedLayout(this);
-    _main_widget->setLayout(_media_layout);
+    _mediaLayout = new QStackedLayout(this);
+    _mainWidget->setLayout(_mediaLayout);
 
-    _media_widget = new MediaWidget(this);
-    _media_widget->setMinimumSize(600, 400);
-    _media_widget->setMouseTracking(true);
-    _media_layout->addWidget(_media_widget);
+    _mediaWidget = new MediaWidget(this);
+    _mediaWidget->setMinimumSize(600, 400);
+    _mediaWidget->setMouseTracking(true);
+    _mediaLayout->addWidget(_mediaWidget);
 
-    std::string target_file;
+    std::string targetFile;
     if (std::filesystem::is_directory(target_path))
     {
-        _target_dir = target_path;
+        _targetDir = target_path;
         for (const auto& entry : std::filesystem::directory_iterator(target_path))
         {
             if (entry.is_regular_file())
             {
                 const std::string file = entry.path().string();
-                target_file = file;
+                targetFile = file;
             }
         }
     }
     else if (std::filesystem::is_regular_file(target_path))
     {
-        target_file = target_path;
-        _target_dir = ien::get_file_directory(target_file);
+        targetFile = target_path;
+        _targetDir = ien::get_file_directory(targetFile);
     }
     else
     {
@@ -47,23 +50,31 @@ MainWindow::MainWindow(const std::string& target_path)
     }
 
     loadFiles();
-    const auto it = std::find_if(_file_list.cbegin(), _file_list.cend(), [&](const FileEntry& entry) {
-        return entry.path == target_file;
+    const auto it = std::find_if(_fileList.cbegin(), _fileList.cend(), [&](const FileEntry& entry) {
+        return entry.path == targetFile;
     });
-    if (it == _file_list.cend())
+    if (it == _fileList.cend())
     {
-        _current_index = 0;
-        _media_widget->setMedia("");
+        _currentIndex = 0;
+        _mediaWidget->setMedia("");
     }
     else
     {
-        _current_index = it - _file_list.begin();
-        _media_widget->setMedia(target_file);
+        _currentIndex = it - _fileList.begin();
+        _mediaWidget->setMedia(targetFile);
     }
+
+    loadLinks();
+
+    connect(this, &MainWindow::currentIndexChanged, this, [this] { updateCurrentFileInfo(); });
 }
 
 void MainWindow::keyPressEvent(QKeyEvent* ev)
 {
+    const auto ctrl = ev->modifiers().testFlag(Qt::KeyboardModifier::ControlModifier);
+    const auto shift = ev->modifiers().testFlag(Qt::KeyboardModifier::ShiftModifier);
+    const auto alt = ev->modifiers().testFlag(Qt::KeyboardModifier::AltModifier);
+
     switch (ev->key())
     {
     case Qt::Key_Left:
@@ -87,75 +98,111 @@ void MainWindow::keyPressEvent(QKeyEvent* ev)
     case Qt::Key_F:
         toggleFullScreen();
         break;
+    case Qt::Key_I:
+        toggleCurrentFileInfo();
+        break;
+    }
+
+    if (ctrl && shift && !_fileList.empty())
+    {
+        for (const auto& [key, dir] : _links)
+        {
+            if (ev->key() == key)
+            {
+                auto copyResult = copyFileToLinkDir(_fileList[_currentIndex].path, dir);
+                switch (copyResult)
+                {
+                case CopyFileToLinkDirResult::CreatedNew:
+                    _mediaWidget->showMessage("Copy succesful! (new)");
+                    break;
+                case CopyFileToLinkDirResult::Overwriten:
+                    _mediaWidget->showMessage("Copy succesful! (overwrite)");
+                    break;
+                case CopyFileToLinkDirResult::SourceFileNotFound:
+                    _mediaWidget->showMessage("Copy failed! (source not found)");
+                    break;
+                case CopyFileToLinkDirResult::TargetDirNotFound:
+                    _mediaWidget->showMessage("Copy failed! (target dir not found)");
+                    break;
+                case CopyFileToLinkDirResult::Error:
+                    _mediaWidget->showMessage("Copy failed! (error)");
+                    break;
+                }
+            }
+        }
     }
 }
 
 void MainWindow::loadFiles()
 {
-    _file_list.clear();
-    for (const auto& entry : std::filesystem::directory_iterator(_target_dir))
+    _fileList.clear();
+    for (const auto& entry : std::filesystem::directory_iterator(_targetDir))
     {
         if (entry.is_regular_file() && hasMediaExtension(entry.path()))
         {
             const auto path = entry.path();
             const auto mtime = ien::get_file_mtime(path);
-            _file_list.push_back(FileEntry{ path, mtime });
+            _fileList.push_back(FileEntry{ path, mtime });
         }
     }
 
-    std::sort(_file_list.begin(), _file_list.end(), [](const FileEntry& lhs, const FileEntry& rhs) {
+    std::sort(_fileList.begin(), _fileList.end(), [](const FileEntry& lhs, const FileEntry& rhs) {
         return lhs.mtime > rhs.mtime;
     });
 }
 
 void MainWindow::nextEntry(int times)
 {
-    if (_file_list.empty())
+    if (_fileList.empty())
     {
         return;
     }
 
-    _current_index += times;
-    if (_current_index >= _file_list.size())
+    _currentIndex += times;
+    if (_currentIndex >= _fileList.size())
     {
-        _current_index = _file_list.size() - 1;
+        _currentIndex = _fileList.size() - 1;
     }
-    _media_widget->setMedia(_file_list[_current_index].path);
+    _mediaWidget->setMedia(_fileList[_currentIndex].path);
+    emit currentIndexChanged(_currentIndex);
 }
 
 void MainWindow::prevEntry(int times)
 {
-    if (_file_list.empty())
+    if (_fileList.empty())
     {
         return;
     }
 
-    _current_index -= times;
-    if (_current_index < 0)
+    _currentIndex -= times;
+    if (_currentIndex < 0)
     {
-        _current_index = 0;
+        _currentIndex = 0;
     }
-    _media_widget->setMedia(_file_list[_current_index].path);
+    _mediaWidget->setMedia(_fileList[_currentIndex].path);
+    emit currentIndexChanged(_currentIndex);
 }
 
 void MainWindow::firstEntry()
 {
-    if (_file_list.empty())
+    if (_fileList.empty())
     {
         return;
     }
-    _current_index = 0;
-    _media_widget->setMedia(_file_list[_current_index].path);
+    _currentIndex = 0;
+    _mediaWidget->setMedia(_fileList[_currentIndex].path);
+    emit currentIndexChanged(_currentIndex);
 }
 
 void MainWindow::lastEntry()
 {
-    if (_file_list.empty())
+    if (_fileList.empty())
     {
         return;
     }
-    _current_index = _file_list.size() - 1;
-    _media_widget->setMedia(_file_list[_current_index].path);
+    _currentIndex = _fileList.size() - 1;
+    _mediaWidget->setMedia(_fileList[_currentIndex].path);
+    emit currentIndexChanged(_currentIndex);
 }
 
 void MainWindow::toggleFullScreen()
@@ -167,5 +214,38 @@ void MainWindow::toggleFullScreen()
     else
     {
         showFullScreen();
+    }
+}
+
+void MainWindow::loadLinks()
+{
+    auto path = ien::get_current_user_homedir();
+    if (!path.ends_with("/") & !path.ends_with("\\"))
+    {
+        path += std::filesystem::path::preferred_separator;
+    }
+    path += ".config/igal_qt/links.txt";
+    _links = getLinksFromFile(path);
+}
+
+void MainWindow::toggleCurrentFileInfo()
+{
+    if (_mediaWidget->isInfoShown())
+    {
+        _mediaWidget->hideInfo();
+    }
+    else
+    {
+        std::string info = getFileInfoString(_fileList[_currentIndex].path, _mediaWidget->currentMediaSource());
+        _mediaWidget->showInfo(QString::fromStdString(info));
+    }
+}
+
+void MainWindow::updateCurrentFileInfo()
+{
+    if (_mediaWidget->isInfoShown())
+    {
+        std::string info = getFileInfoString(_fileList[_currentIndex].path, _mediaWidget->currentMediaSource());
+        _mediaWidget->showInfo(QString::fromStdString(info));
     }
 }

@@ -14,6 +14,8 @@ find_package(Qt6 COMPONENTS Widgets Multimedia MultimediaWidgets REQUIRED)
 
 qt_add_executable(igal_qt
     "src/main.cpp"
+
+    "src/InfoOverlayWidget.cpp"
     "src/MainWindow.cpp"
     "src/MediaWidget.cpp"
     "src/Utils.cpp"

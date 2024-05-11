@@ -16,9 +16,11 @@ MediaWidget::MediaWidget(QWidget* parent)
 
     _image_label = new QLabel(this);
     _video_player = new VideoPlayerWidget(this);
+    _info_overlay = new InfoOverlayWidget(this);
 
     _main_layout->addWidget(_image_label);
     _main_layout->addWidget(_video_player);
+    _main_layout->addWidget(_info_overlay);
 
     _image_label->setAlignment(Qt::AlignCenter);
     _image_label->setMinimumSize(600, 400);
@@ -26,6 +28,8 @@ MediaWidget::MediaWidget(QWidget* parent)
 
     _video_player->setMinimumSize(600, 400);
     _video_player->hide();
+
+    _main_layout->setCurrentWidget(_info_overlay);
 }
 
 void MediaWidget::setMedia(const std::string& source)
@@ -47,9 +51,9 @@ void MediaWidget::setMedia(const std::string& source)
         _animation = std::make_unique<QMovie>(QString::fromStdString(source));
         _image_label->setPixmap(QPixmap());
         _image_label->setMovie(_animation.get());
+        syncAnimationSize();
         _animation->start();
         _image_label->show();
-        syncAnimationSize();
     }
     else if (isImage(_target))
     {
@@ -61,6 +65,40 @@ void MediaWidget::setMedia(const std::string& source)
             _pixmap->scaled(size(), Qt::KeepAspectRatio, Qt::TransformationMode::SmoothTransformation));
         _image_label->show();
     }
+}
+
+std::variant<const QImage*, const QMovie*, const QMediaPlayer*> MediaWidget::currentMediaSource()
+{
+    switch(_current_media)
+    {
+        case CurrentMediaType::Image:
+            return _image.get();
+        case CurrentMediaType::Animation:
+            return _animation.get();
+        case CurrentMediaType::Video:
+            return _video_player->mediaPlayer();
+    }
+    return {};
+}
+
+bool MediaWidget::isInfoShown()
+{
+    return _info_overlay->isInfoShown();
+}
+
+void MediaWidget::showMessage(const QString& message)
+{
+    _info_overlay->showMessage(message);
+}
+
+void MediaWidget::showInfo(const QString& info)
+{
+    _info_overlay->showInfo(info);
+}
+
+void MediaWidget::hideInfo()
+{
+    _info_overlay->hideInfo();
 }
 
 void MediaWidget::paintEvent(QPaintEvent* ev)

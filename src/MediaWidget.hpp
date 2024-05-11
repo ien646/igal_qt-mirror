@@ -10,6 +10,7 @@
 #include <QtMultimedia/QMediaPlayer>
 #include <QtMultimediaWidgets/QVideoWidget>
 
+#include "InfoOverlayWidget.hpp"
 #include "VideoPlayerWidget.hpp"
 
 enum class CurrentMediaType
@@ -26,6 +27,12 @@ public:
     MediaWidget(QWidget* parent = nullptr);
 
     void setMedia(const std::string& source);
+
+    std::variant<const QImage*, const QMovie*, const QMediaPlayer*> currentMediaSource();
+    bool isInfoShown();
+    void showMessage(const QString& message);
+    void showInfo(const QString& info);
+    void hideInfo();
 
     void paintEvent(QPaintEvent* ev) override;
     void resizeEvent(QResizeEvent* ev) override;
@@ -44,6 +51,7 @@ private:
 
     QLabel* _image_label = nullptr;    
     VideoPlayerWidget* _video_player = nullptr;    
+    InfoOverlayWidget* _info_overlay = nullptr;
 
     void syncAnimationSize();
 };
