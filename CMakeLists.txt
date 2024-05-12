@@ -17,6 +17,7 @@ qt_add_executable(igal_qt
 
     "src/CachedMediaProxy.cpp"
     "src/InfoOverlayWidget.cpp"
+    "src/ListSelectWidget.cpp"
     "src/MainWindow.cpp"   
     "src/MediaWidget.cpp"
     "src/Utils.cpp"

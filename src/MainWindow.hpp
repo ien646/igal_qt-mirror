@@ -3,6 +3,7 @@
 #include <QMainWindow>
 #include <QStackedLayout>
 
+#include "ListSelectWidget.hpp"
 #include "MediaWidget.hpp"
 
 #include <unordered_map>
@@ -33,6 +34,8 @@ private:
     QWidget* _mainWidget = nullptr;
     QStackedLayout* _mediaLayout = nullptr;
     MediaWidget* _mediaWidget = nullptr;
+    ListSelectWidget* _upscaleSelectWidget = nullptr;
+    bool _controls_disabled = false;
 
     void loadFiles();
     void nextEntry(int times = 1);
@@ -45,4 +48,5 @@ private:
     void updateCurrentFileInfo();
     void processCopyToLinkKey(QKeyEvent* ev);
     void preCacheSurroundings();
+    void upscaleImage(const std::string& path, const std::string& model);
 };

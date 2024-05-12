@@ -1,5 +1,7 @@
 #include "MainWindow.hpp"
 
+#include <QFile>
+
 #include <ien/fs_utils.hpp>
 #include <ien/io_utils.hpp>
 #include <ien/platform.hpp>
@@ -15,16 +17,22 @@ MainWindow::MainWindow(const std::string& target_path)
     setMinimumSize(600, 400);
 
     _mainWidget = new QWidget(this);
+    _mediaLayout = new QStackedLayout(this);
+    _mediaWidget = new MediaWidget(this);
+    _upscaleSelectWidget = new ListSelectWidget(getUpscaleModels(), this);
+
     setCentralWidget(_mainWidget);
     _mainWidget->setStyleSheet("QWidget{background-color:#000000;}");
-
-    _mediaLayout = new QStackedLayout(this);
     _mainWidget->setLayout(_mediaLayout);
-
-    _mediaWidget = new MediaWidget(this);
     _mediaWidget->setMinimumSize(600, 400);
     _mediaWidget->setMouseTracking(true);
+
+    _mediaLayout->setStackingMode(QStackedLayout::StackAll);
     _mediaLayout->addWidget(_mediaWidget);
+    _mediaLayout->addWidget(_upscaleSelectWidget);
+
+    _mediaLayout->setCurrentWidget(_upscaleSelectWidget);
+    _upscaleSelectWidget->hide();
 
     std::string targetFile;
     if (std::filesystem::is_directory(target_path))
@@ -68,6 +76,13 @@ MainWindow::MainWindow(const std::string& target_path)
     loadLinks();
 
     connect(this, &MainWindow::currentIndexChanged, this, [this] { updateCurrentFileInfo(); });
+
+    connect(_upscaleSelectWidget, &ListSelectWidget::itemSelected, this, [this](const std::string& selected) {
+        upscaleImage(_fileList[_currentIndex].path, selected);
+        _upscaleSelectWidget->hide();
+    });
+
+    connect(_upscaleSelectWidget, &ListSelectWidget::cancelled, this, [this] { _upscaleSelectWidget->hide(); });
 }
 
 void MainWindow::processCopyToLinkKey(QKeyEvent* ev)
@@ -103,24 +118,62 @@ void MainWindow::preCacheSurroundings()
 {
     // Precache surroundings
     constexpr int SURROUNDING_PRECACHE_WINDOW = 3;
-    for(int i = 1; i <= SURROUNDING_PRECACHE_WINDOW; ++i)
+    for (int i = 1; i <= SURROUNDING_PRECACHE_WINDOW; ++i)
     {
         const int64_t prevIndex = _currentIndex - i;
         const int64_t nextIndex = _currentIndex + i;
 
-        if(prevIndex > 0)
+        if (prevIndex > 0)
         {
             _mediaWidget->cachedMediaProxy().preCacheImage(_fileList[prevIndex].path);
         }
-        if(nextIndex < _fileList.size())
+        if (nextIndex < _fileList.size())
         {
             _mediaWidget->cachedMediaProxy().preCacheImage(_fileList[nextIndex].path);
         }
     }
 }
 
+void MainWindow::upscaleImage(const std::string& path, const std::string& model)
+{
+    _controls_disabled = true;
+
+    std::thread thread([=, this] {
+        const std::string targetpath = std::format("{}/up2_{}", ien::get_file_directory(path), ien::get_file_name(path));
+        const std::string command = "realesrgan-ncnn-vulkan";
+        const std::vector<std::string> args = { "-i", path, "-o", targetpath, "-n", model, "-f", "jpg" };
+        runCommand(command, args, [this](std::string text) {
+            QMetaObject::invokeMethod(this, [=, this] { _mediaWidget->showMessage(QString::fromStdString(text)); });
+        });
+        QMetaObject::invokeMethod(this, [=, this] {
+            QImage img(QString::fromStdString(targetpath));
+            QImage scaledImg = img.scaledToWidth(img.width() / 2, Qt::TransformationMode::SmoothTransformation);
+            scaledImg.save(QString::fromStdString(targetpath), "JPG", 95);
+
+            const auto mtime = ien::get_file_mtime(path);
+            QFile::moveToTrash(QString::fromStdString(path));      
+
+            const auto finalPath = path.ends_with(".jpg") ? path : path + ".jpg";     
+
+            std::filesystem::rename(targetpath, finalPath);
+            ien::set_file_mtime(finalPath, mtime);
+            
+            _mediaWidget->showMessage("Finished!");
+            _controls_disabled = false;
+            loadFiles(); 
+            updateCurrentFileInfo();
+        });
+    });
+    thread.detach();
+}
+
 void MainWindow::keyPressEvent(QKeyEvent* ev)
 {
+    if (_controls_disabled)
+    {
+        return;
+    }
+
     const auto ctrl = ev->modifiers().testFlag(Qt::KeyboardModifier::ControlModifier);
     const auto shift = ev->modifiers().testFlag(Qt::KeyboardModifier::ShiftModifier);
     const auto alt = ev->modifiers().testFlag(Qt::KeyboardModifier::AltModifier);
@@ -162,6 +215,12 @@ void MainWindow::keyPressEvent(QKeyEvent* ev)
 
     if (ctrl && shift && !_fileList.empty())
     {
+        if (ev->key() == Qt::Key_Plus)
+        {
+            _upscaleSelectWidget->show();
+            _upscaleSelectWidget->setFocus(Qt::FocusReason::MouseFocusReason);
+            _mediaLayout->setCurrentWidget(_upscaleSelectWidget);
+        }
         processCopyToLinkKey(ev);
     }
 }
@@ -197,9 +256,9 @@ void MainWindow::nextEntry(int times)
         _currentIndex = _fileList.size() - 1;
     }
     _mediaWidget->setMedia(_fileList[_currentIndex].path);
-    emit currentIndexChanged(_currentIndex);   
+    emit currentIndexChanged(_currentIndex);
 
-    preCacheSurroundings(); 
+    preCacheSurroundings();
 }
 
 void MainWindow::prevEntry(int times)

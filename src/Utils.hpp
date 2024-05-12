@@ -14,6 +14,7 @@ bool isImage(const std::string& path);
 bool isAnimation(const std::string& path);
 bool isVideo(const std::string& path);
 std::unordered_map<int, std::string> getLinksFromFile(const std::string& path);
+std::vector<std::string> getUpscaleModels();
 
 enum class CopyFileToLinkDirResult
 {
@@ -29,3 +30,5 @@ enum class CopyFileToLinkDirResult
 std::string getFileInfoString(const std::string& file, std::variant<const QImage*, const QMovie*, const QMediaPlayer*> currentSource);
 
 const QFont& getTextFont(int size = 8);
+
+void runCommand(const std::string& command, const std::vector<std::string>& args, std::function<void(std::string)> messageCallback);

@@ -2,11 +2,14 @@
 
 #include <ien/fs_utils.hpp>
 #include <ien/io_utils.hpp>
+#include <ien/platform.hpp>
 #include <ien/str_utils.hpp>
 
 #include <QKeySequence>
 #include <QMediaMetaData>
+#include <QProcess>
 
+#include <cstdio>
 #include <filesystem>
 #include <sstream>
 #include <unordered_set>
@@ -126,6 +129,14 @@ std::unordered_map<int, std::string> getLinksFromFile(const std::string& path)
     return result;
 }
 
+std::vector<std::string> getUpscaleModels()
+{
+    static const std::vector<std::string>
+        MODELS = { "realesrgan-x4plus-anime", "realesr-animevideov3", "realesrgan-x4plus", "realesrnet-x4plus" };
+
+    return MODELS;
+}
+
 CopyFileToLinkDirResult copyFileToLinkDir(const std::string& file, const std::string& linkDir)
 {
     if (!std::filesystem::exists(file))
@@ -205,4 +216,28 @@ const QFont& getTextFont(int size)
     }();
 
     return font;
+}
+
+void runCommand(const std::string& command, const std::vector<std::string>& args, std::function<void(std::string)> messageCallback)
+{
+    QStringList cmdargs;
+    for(const auto& a : args)
+    {
+        cmdargs.push_back(QString::fromStdString(a));
+    }
+    QProcess proc;
+    proc.start(QString::fromStdString(command), cmdargs);
+
+    while(!proc.waitForFinished(10))
+    {
+        auto message = proc.readAllStandardOutput() + proc.readAllStandardError();
+        if(message.endsWith("\n"))
+        {
+            message = message.first(message.size() - 1);
+        }
+        if(!message.isEmpty())
+        {
+            messageCallback(message.toStdString());
+        }
+    }
 }
