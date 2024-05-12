@@ -63,6 +63,7 @@ MainWindow::MainWindow(const std::string& target_path)
         _currentIndex = it - _fileList.begin();
         _mediaWidget->setMedia(targetFile);
     }
+    preCacheSurroundings();
 
     loadLinks();
 
@@ -98,6 +99,26 @@ void MainWindow::processCopyToLinkKey(QKeyEvent* ev)
     }
 }
 
+void MainWindow::preCacheSurroundings()
+{
+    // Precache surroundings
+    constexpr int SURROUNDING_PRECACHE_WINDOW = 3;
+    for(int i = 1; i <= SURROUNDING_PRECACHE_WINDOW; ++i)
+    {
+        const int64_t prevIndex = _currentIndex - i;
+        const int64_t nextIndex = _currentIndex + i;
+
+        if(prevIndex > 0)
+        {
+            _mediaWidget->cachedMediaProxy().preCacheImage(_fileList[prevIndex].path);
+        }
+        if(nextIndex < _fileList.size())
+        {
+            _mediaWidget->cachedMediaProxy().preCacheImage(_fileList[nextIndex].path);
+        }
+    }
+}
+
 void MainWindow::keyPressEvent(QKeyEvent* ev)
 {
     const auto ctrl = ev->modifiers().testFlag(Qt::KeyboardModifier::ControlModifier);
@@ -113,15 +134,19 @@ void MainWindow::keyPressEvent(QKeyEvent* ev)
         nextEntry();
         break;
     case Qt::Key_PageUp:
+        _mediaWidget->cachedMediaProxy().notifyBigJump();
         prevEntry(10);
         break;
     case Qt::Key_PageDown:
+        _mediaWidget->cachedMediaProxy().notifyBigJump();
         nextEntry(10);
         break;
     case Qt::Key_Home:
+        _mediaWidget->cachedMediaProxy().notifyBigJump();
         firstEntry();
         break;
     case Qt::Key_End:
+        _mediaWidget->cachedMediaProxy().notifyBigJump();
         lastEntry();
         break;
     case Qt::Key_F:
@@ -172,7 +197,9 @@ void MainWindow::nextEntry(int times)
         _currentIndex = _fileList.size() - 1;
     }
     _mediaWidget->setMedia(_fileList[_currentIndex].path);
-    emit currentIndexChanged(_currentIndex);
+    emit currentIndexChanged(_currentIndex);   
+
+    preCacheSurroundings(); 
 }
 
 void MainWindow::prevEntry(int times)
@@ -189,6 +216,8 @@ void MainWindow::prevEntry(int times)
     }
     _mediaWidget->setMedia(_fileList[_currentIndex].path);
     emit currentIndexChanged(_currentIndex);
+
+    preCacheSurroundings();
 }
 
 void MainWindow::firstEntry()
@@ -200,6 +229,8 @@ void MainWindow::firstEntry()
     _currentIndex = 0;
     _mediaWidget->setMedia(_fileList[_currentIndex].path);
     emit currentIndexChanged(_currentIndex);
+
+    preCacheSurroundings();
 }
 
 void MainWindow::lastEntry()
@@ -211,6 +242,8 @@ void MainWindow::lastEntry()
     _currentIndex = _fileList.size() - 1;
     _mediaWidget->setMedia(_fileList[_currentIndex].path);
     emit currentIndexChanged(_currentIndex);
+
+    preCacheSurroundings();
 }
 
 void MainWindow::toggleFullScreen()

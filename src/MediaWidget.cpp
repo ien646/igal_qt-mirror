@@ -9,111 +9,113 @@
 
 MediaWidget::MediaWidget(QWidget* parent)
     : QWidget(parent)
+    , _cachedMediaProxy(1024)
 {
-    _main_layout = new QStackedLayout(this);
-    _main_layout->setStackingMode(QStackedLayout::StackAll);
-    setLayout(_main_layout);
+    _mainLayout = new QStackedLayout(this);
+    _mainLayout->setStackingMode(QStackedLayout::StackAll);
+    setLayout(_mainLayout);
 
-    _image_label = new QLabel(this);
-    _video_player = new VideoPlayerWidget(this);
-    _info_overlay = new InfoOverlayWidget(this);
+    _imageLabel = new QLabel(this);
+    _videoPlayer = new VideoPlayerWidget(this);
+    _infoOverlay = new InfoOverlayWidget(this);
 
-    _main_layout->addWidget(_image_label);
-    _main_layout->addWidget(_video_player);
-    _main_layout->addWidget(_info_overlay);
+    _mainLayout->addWidget(_imageLabel);
+    _mainLayout->addWidget(_videoPlayer);
+    _mainLayout->addWidget(_infoOverlay);
 
-    _image_label->setAlignment(Qt::AlignCenter);
-    _image_label->setMinimumSize(600, 400);
-    _image_label->hide();
+    _imageLabel->setAlignment(Qt::AlignCenter);
+    _imageLabel->setMinimumSize(600, 400);
+    _imageLabel->hide();
 
-    _video_player->setMinimumSize(600, 400);
-    _video_player->hide();
+    _videoPlayer->setMinimumSize(600, 400);
+    _videoPlayer->hide();
 
-    _main_layout->setCurrentWidget(_info_overlay);
+    _mainLayout->setCurrentWidget(_infoOverlay);
 }
 
 void MediaWidget::setMedia(const std::string& source)
 {
     _target = source;
 
-    _video_player->hide();
-    _image_label->hide();
+    _videoPlayer->hide();
+    _videoPlayer->mediaPlayer()->stop();
+    _imageLabel->hide();
 
     if (isVideo(_target))
     {
-        _current_media = CurrentMediaType::Video;
-        _video_player->setMedia(source);
-        _video_player->show();
+        _currentMedia = CurrentMediaType::Video;
+        _videoPlayer->setMedia(source);
+        _videoPlayer->show();
     }
     else if (isAnimation(_target))
     {
-        _current_media = CurrentMediaType::Animation;
-        _animation = std::make_unique<QMovie>(QString::fromStdString(source));
-        _image_label->setPixmap(QPixmap());
-        _image_label->setMovie(_animation.get());
+        _currentMedia = CurrentMediaType::Animation;
+        _animation = _cachedMediaProxy.getAnimation(source);
+        _imageLabel->setPixmap(QPixmap());
+        _imageLabel->setMovie(_animation.get());
         syncAnimationSize();
         _animation->start();
-        _image_label->show();
+        _imageLabel->show();
     }
     else if (isImage(_target))
     {
-        _current_media = CurrentMediaType::Image;
-        _image = std::make_unique<QImage>(QString::fromStdString(source));
+        _currentMedia = CurrentMediaType::Image;
+        _image = _cachedMediaProxy.getImage(source);
         _pixmap = std::make_unique<QPixmap>(QPixmap::fromImage(*_image));
-        _image_label->setMovie(nullptr);
-        _image_label->setPixmap(
+        _imageLabel->setMovie(nullptr);
+        _imageLabel->setPixmap(
             _pixmap->scaled(size(), Qt::KeepAspectRatio, Qt::TransformationMode::SmoothTransformation));
-        _image_label->show();
+        _imageLabel->show();
     }
 }
 
 std::variant<const QImage*, const QMovie*, const QMediaPlayer*> MediaWidget::currentMediaSource()
 {
-    switch(_current_media)
+    switch(_currentMedia)
     {
         case CurrentMediaType::Image:
             return _image.get();
         case CurrentMediaType::Animation:
             return _animation.get();
         case CurrentMediaType::Video:
-            return _video_player->mediaPlayer();
+            return _videoPlayer->mediaPlayer();
     }
     return {};
 }
 
 bool MediaWidget::isInfoShown()
 {
-    return _info_overlay->isInfoShown();
+    return _infoOverlay->isInfoShown();
 }
 
 void MediaWidget::showMessage(const QString& message)
 {
-    _info_overlay->showMessage(message);
+    _infoOverlay->showMessage(message);
 }
 
 void MediaWidget::showInfo(const QString& info)
 {
-    _info_overlay->showInfo(info);
+    _infoOverlay->showInfo(info);
 }
 
 void MediaWidget::hideInfo()
 {
-    _info_overlay->hideInfo();
+    _infoOverlay->hideInfo();
 }
 
 void MediaWidget::toggleMute()
 {
-    QAudioOutput* audioOutput = _video_player->audioOutput();
+    QAudioOutput* audioOutput = _videoPlayer->audioOutput();
 
     if(!audioOutput->isMuted())
     {
-        _volume_before_mute = audioOutput->volume();
+        _volumeBeforeMute = audioOutput->volume();
         audioOutput->setVolume(0);
         audioOutput->setMuted(true);
     }
     else
     {
-        audioOutput->setVolume(_volume_before_mute);
+        audioOutput->setVolume(_volumeBeforeMute);
         audioOutput->setMuted(false);
     }
 }
@@ -132,22 +134,27 @@ void MediaWidget::paintEvent(QPaintEvent* ev)
 
 void MediaWidget::resizeEvent(QResizeEvent* ev)
 {
-    if (_current_media == CurrentMediaType::Image)
+    if (_currentMedia == CurrentMediaType::Image)
     {
-        _image_label->setPixmap(
+        _imageLabel->setPixmap(
             _pixmap->scaled(ev->size(), Qt::KeepAspectRatio, Qt::TransformationMode::SmoothTransformation));
-        _image_label->setFixedSize(ev->size());
-        _image_label->setMinimumSize(600, 400);
+        _imageLabel->setFixedSize(ev->size());
+        _imageLabel->setMinimumSize(600, 400);
     }
-    else if (_current_media == CurrentMediaType::Animation)
+    else if (_currentMedia == CurrentMediaType::Animation)
     {
         syncAnimationSize();
     }
-    else if (_current_media == CurrentMediaType::Video)
+    else if (_currentMedia == CurrentMediaType::Video)
     {
-        _video_player->setFixedSize(ev->size());
-        _video_player->setMinimumSize(1, 1);
+        _videoPlayer->setFixedSize(ev->size());
+        _videoPlayer->setMinimumSize(1, 1);
     }
+}
+
+CachedMediaProxy& MediaWidget::cachedMediaProxy()
+{
+    return _cachedMediaProxy;
 }
 
 void MediaWidget::syncAnimationSize()

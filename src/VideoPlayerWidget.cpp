@@ -39,6 +39,7 @@ VideoPlayerWidget::VideoPlayerWidget(QWidget* parent)
 
     _media_player->setVideoOutput(_video_item);
     _media_player->setLoops(QMediaPlayer::Infinite);
+    _media_player->setAudioOutput(_audio_output);
 
     connect(_video_controls, &VideoControls::playClicked, this, [this] { _media_player->play(); });
 

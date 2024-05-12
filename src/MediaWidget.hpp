@@ -10,6 +10,7 @@
 #include <QtMultimedia/QMediaPlayer>
 #include <QtMultimediaWidgets/QVideoWidget>
 
+#include "CachedMediaProxy.hpp"
 #include "InfoOverlayWidget.hpp"
 #include "VideoPlayerWidget.hpp"
 
@@ -38,22 +39,25 @@ public:
     void paintEvent(QPaintEvent* ev) override;
     void resizeEvent(QResizeEvent* ev) override;
 
+    CachedMediaProxy& cachedMediaProxy();
+
 private:
     std::string _target;
-    bool _is_video;
-    float _volume_before_mute;
+    bool _isVideo;
+    float _volumeBeforeMute;
 
-    QStackedLayout* _main_layout = nullptr;
+    QStackedLayout* _mainLayout = nullptr;
 
-    CurrentMediaType _current_media;
+    CurrentMediaType _currentMedia;
 
-    std::unique_ptr<QImage> _image;
+    CachedMediaProxy _cachedMediaProxy;
+    std::shared_ptr<QImage> _image;
     std::unique_ptr<QPixmap> _pixmap;
-    std::unique_ptr<QMovie> _animation;
+    std::shared_ptr<QMovie> _animation;
 
-    QLabel* _image_label = nullptr;    
-    VideoPlayerWidget* _video_player = nullptr;    
-    InfoOverlayWidget* _info_overlay = nullptr;
+    QLabel* _imageLabel = nullptr;    
+    VideoPlayerWidget* _videoPlayer = nullptr;    
+    InfoOverlayWidget* _infoOverlay = nullptr;
 
     void syncAnimationSize();
 };

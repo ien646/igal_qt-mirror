@@ -44,4 +44,5 @@ private:
     void toggleCurrentFileInfo();
     void updateCurrentFileInfo();
     void processCopyToLinkKey(QKeyEvent* ev);
+    void preCacheSurroundings();
 };

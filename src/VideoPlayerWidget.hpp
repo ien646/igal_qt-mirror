@@ -20,6 +20,7 @@ public:
     VideoPlayerWidget(QWidget* parent = nullptr);
 
     void setMedia(const std::string& src);
+    void stop();
 
     void paintEvent(QPaintEvent* ev) override;
     void resizeEvent(QResizeEvent* ev) override;
