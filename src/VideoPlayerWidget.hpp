@@ -45,4 +45,6 @@ private:
     QTimer* _timer = nullptr;
     bool _clicked = false;
     bool _was_playing_before_seek_click = false;
+
+    void setupConnections();
 };
