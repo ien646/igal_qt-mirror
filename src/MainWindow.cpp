@@ -202,6 +202,10 @@ void MainWindow::keyPressEvent(QKeyEvent* ev)
         _mediaWidget->cachedMediaProxy().notifyBigJump();
         lastEntry();
         break;
+    case Qt::Key_R:
+        _mediaWidget->cachedMediaProxy().notifyBigJump();
+        randomEntry();
+        break;
     case Qt::Key_F:
         toggleFullScreen();
         break;
@@ -299,6 +303,20 @@ void MainWindow::lastEntry()
         return;
     }
     _currentIndex = _fileList.size() - 1;
+    _mediaWidget->setMedia(_fileList[_currentIndex].path);
+    emit currentIndexChanged(_currentIndex);
+
+    preCacheSurroundings();
+}
+
+void MainWindow::randomEntry()
+{
+    if (_fileList.empty())
+    {
+        return;
+    }
+
+    _currentIndex = rand() % _fileList.size();
     _mediaWidget->setMedia(_fileList[_currentIndex].path);
     emit currentIndexChanged(_currentIndex);
 

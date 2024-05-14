@@ -42,6 +42,7 @@ private:
     void prevEntry(int times = 1);
     void firstEntry();
     void lastEntry();
+    void randomEntry();
     void toggleFullScreen();
     void loadLinks();
     void toggleCurrentFileInfo();

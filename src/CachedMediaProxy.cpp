@@ -78,7 +78,14 @@ void CachedMediaProxy::preCacheImage(const std::string& path)
 
 void CachedMediaProxy::notifyBigJump()
 {
-    _future_images.clear();
+    std::thread clearThread([currentFutures = std::move(_future_images)]{
+        for(auto& [path, future] : currentFutures)
+        {
+            future.wait();
+        }
+    });
+    clearThread.detach();
+    _future_images = decltype(_future_images){ };
 }
 
 void CachedMediaProxy::deleteOldest()
