@@ -35,6 +35,7 @@ private:
     QStackedLayout* _mediaLayout = nullptr;
     MediaWidget* _mediaWidget = nullptr;
     ListSelectWidget* _upscaleSelectWidget = nullptr;
+    ListSelectWidget* _navigateSelectWidget = nullptr;
     bool _controls_disabled = false;
 
     void loadFiles();
@@ -50,4 +51,5 @@ private:
     void processCopyToLinkKey(QKeyEvent* ev);
     void preCacheSurroundings();
     void upscaleImage(const std::string& path, const std::string& model);
+    void navigateDir(const std::string& path);
 };

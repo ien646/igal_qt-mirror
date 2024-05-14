@@ -11,6 +11,8 @@ class ListSelectWidget : public QWidget
 public:
     ListSelectWidget(const std::vector<std::string>& items, QWidget* parent = nullptr);
 
+    void setItems(const std::vector<std::string>& items);
+
     void keyPressEvent(QKeyEvent* ev) override;
 
 signals:

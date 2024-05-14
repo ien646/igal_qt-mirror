@@ -42,6 +42,8 @@ public:
     void preCacheImage(const std::string& path);
     void notifyBigJump();
 
+    void clear();
+
 private:
     size_t _maxCacheSize;
     size_t _currentCacheSize = 0;

@@ -88,6 +88,16 @@ void CachedMediaProxy::notifyBigJump()
     _future_images = decltype(_future_images){ };
 }
 
+void CachedMediaProxy::clear()
+{
+    for(auto& [path, future] : _future_images)
+    {
+        future.wait();
+    }
+    _future_images.clear();
+    _cached_images.clear();
+}
+
 void CachedMediaProxy::deleteOldest()
 {
     const CachedImage* oldest = nullptr;

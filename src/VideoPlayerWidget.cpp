@@ -42,6 +42,8 @@ VideoPlayerWidget::VideoPlayerWidget(QWidget* parent)
     _timer->setSingleShot(true);
     _timer->setInterval(2500);
     _timer->start();
+
+    setupConnections();
 }
 
 void VideoPlayerWidget::setupConnections()

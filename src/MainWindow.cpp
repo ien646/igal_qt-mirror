@@ -7,6 +7,7 @@
 #include <ien/platform.hpp>
 #include <ien/str_utils.hpp>
 
+#include <algorithm>
 #include <filesystem>
 
 #include "Utils.hpp"
@@ -20,6 +21,7 @@ MainWindow::MainWindow(const std::string& target_path)
     _mediaLayout = new QStackedLayout(this);
     _mediaWidget = new MediaWidget(this);
     _upscaleSelectWidget = new ListSelectWidget(getUpscaleModels(), this);
+    _navigateSelectWidget = new ListSelectWidget({}, this);
 
     setCentralWidget(_mainWidget);
     _mainWidget->setStyleSheet("QWidget{background-color:#000000;}");
@@ -30,9 +32,11 @@ MainWindow::MainWindow(const std::string& target_path)
     _mediaLayout->setStackingMode(QStackedLayout::StackAll);
     _mediaLayout->addWidget(_mediaWidget);
     _mediaLayout->addWidget(_upscaleSelectWidget);
+    _mediaLayout->addWidget(_navigateSelectWidget);
 
     _mediaLayout->setCurrentWidget(_upscaleSelectWidget);
     _upscaleSelectWidget->hide();
+    _navigateSelectWidget->hide();
 
     std::string targetFile;
     if (std::filesystem::is_directory(target_path))
@@ -74,6 +78,12 @@ MainWindow::MainWindow(const std::string& target_path)
     preCacheSurroundings();
 
     loadLinks();
+    std::vector<std::string> linksList;
+    for (const auto& [key, dir] : _links)
+    {
+        linksList.push_back(dir);
+    }
+    _navigateSelectWidget->setItems(linksList);
 
     connect(this, &MainWindow::currentIndexChanged, this, [this] { updateCurrentFileInfo(); });
 
@@ -83,6 +93,21 @@ MainWindow::MainWindow(const std::string& target_path)
     });
 
     connect(_upscaleSelectWidget, &ListSelectWidget::cancelled, this, [this] { _upscaleSelectWidget->hide(); });
+
+    connect(_navigateSelectWidget, &ListSelectWidget::itemSelected, this, [this](const std::string& selected) {
+        const auto newDir = _targetDir + std::filesystem::path::preferred_separator + selected;
+        if (std::filesystem::exists(newDir))
+        {
+            navigateDir(newDir);
+        }
+        else
+        {
+            _mediaWidget->showMessage(QString::fromStdString("Target dir not found: " + newDir));
+        }
+        _navigateSelectWidget->hide();
+    });
+
+    connect(_navigateSelectWidget, &ListSelectWidget::cancelled, this, [this] { _navigateSelectWidget->hide(); });
 }
 
 void MainWindow::processCopyToLinkKey(QKeyEvent* ev)
@@ -151,20 +176,29 @@ void MainWindow::upscaleImage(const std::string& path, const std::string& model)
             scaledImg.save(QString::fromStdString(targetpath), "JPG", 95);
 
             const auto mtime = ien::get_file_mtime(path);
-            QFile::moveToTrash(QString::fromStdString(path));      
+            QFile::moveToTrash(QString::fromStdString(path));
 
-            const auto finalPath = path.ends_with(".jpg") ? path : path + ".jpg";     
+            const auto finalPath = path.ends_with(".jpg") ? path : path + ".jpg";
 
             std::filesystem::rename(targetpath, finalPath);
             ien::set_file_mtime(finalPath, mtime);
-            
+
             _mediaWidget->showMessage("Finished!");
             _controls_disabled = false;
-            loadFiles(); 
+            loadFiles();
             updateCurrentFileInfo();
         });
     });
     thread.detach();
+}
+
+void MainWindow::navigateDir(const std::string& path)
+{
+    _targetDir = path;
+    loadFiles();
+    _currentIndex = 0;
+    _mediaWidget->cachedMediaProxy().clear();
+    _mediaWidget->setMedia(_fileList[_currentIndex].path);
 }
 
 void MainWindow::keyPressEvent(QKeyEvent* ev)
@@ -225,7 +259,33 @@ void MainWindow::keyPressEvent(QKeyEvent* ev)
             _upscaleSelectWidget->setFocus(Qt::FocusReason::MouseFocusReason);
             _mediaLayout->setCurrentWidget(_upscaleSelectWidget);
         }
-        processCopyToLinkKey(ev);
+        else
+        {
+            processCopyToLinkKey(ev);
+        }
+    }
+
+    if (shift && ev->key() == Qt::Key_Return)
+    {
+        std::vector<std::string> items;
+        for (const auto& [key, dir] : _links)
+        {
+            const auto linkDir = _targetDir + "/" + dir;
+            if (std::filesystem::exists(linkDir))
+            {
+                items.push_back(ien::str_split(linkDir, "/").back());
+            }
+        }
+        if (items.empty())
+        {
+            items.push_back("..");
+        }
+
+        std::sort(items.begin(), items.end());
+        _navigateSelectWidget->setItems(items);
+        _navigateSelectWidget->show();
+        _navigateSelectWidget->setFocus(Qt::FocusReason::MouseFocusReason);
+        _mediaLayout->setCurrentWidget(_navigateSelectWidget);
     }
 }
 
