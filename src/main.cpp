@@ -1,5 +1,6 @@
 #include <QApplication>
 #include <QFontDatabase>
+#include <QMessageBox>
 
 #include <ien/fs_utils.hpp>
 
@@ -8,23 +9,33 @@
 int main(int argc, char** argv)
 {
     QApplication app(argc, argv);
-
-    std::string path;
-    if (argc > 1)
+    try
     {
-        path = argv[1];
+        std::string path;
+        if (argc > 1)
+        {
+            path = argv[1];
+        }
+        else
+        {
+            path = ien::get_current_user_homedir();
+        }
+
+        QFontDatabase::addApplicationFont(":/Pokemon Classic.ttf");
+        QFontDatabase::addApplicationFont(":/JohtoMono-Regular.otf");
+
+        MainWindow window(path);
+        window.show();
+
+        app.exec();
+        return 0;
     }
-    else
+    catch(const std::exception& ex)
     {
-        path = ien::get_current_user_homedir();
+        QMessageBox msgbox;
+        msgbox.setStandardButtons(QMessageBox::StandardButton::Ok);
+        msgbox.setWindowTitle("Error");
+        msgbox.setText(ex.what());
+        msgbox.exec();
     }
-
-    QFontDatabase::addApplicationFont(":/Pokemon Classic.ttf");
-    QFontDatabase::addApplicationFont(":/JohtoMono-Regular.otf");
-
-    MainWindow window(path);
-    window.show();
-
-    app.exec();
-    return 0;
 }

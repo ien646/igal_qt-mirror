@@ -1,7 +1,9 @@
 #include "MainWindow.hpp"
 
 #include <QFile>
+#include <QMessageBox>
 
+#include <ien/container_utils.hpp>
 #include <ien/fs_utils.hpp>
 #include <ien/io_utils.hpp>
 #include <ien/platform.hpp>
@@ -201,6 +203,33 @@ void MainWindow::navigateDir(const std::string& path)
     _mediaWidget->setMedia(_fileList[_currentIndex].path);
 }
 
+void MainWindow::deleteFile(const std::string& path)
+{
+    using StandardButton = QMessageBox::StandardButton;
+
+    QMessageBox msgbox;
+    msgbox.setWindowTitle("Confirm");
+    msgbox.setText("Send file to trash?");
+    msgbox.setStandardButtons(StandardButton::Yes | StandardButton::No);
+    msgbox.setDefaultButton(StandardButton::No);
+    msgbox.setIcon(QMessageBox::Icon::Question);
+
+    const auto button = static_cast<StandardButton>(msgbox.exec());
+    if(button == StandardButton::Yes)
+    {
+        QFile(QString::fromStdString(_fileList[_currentIndex].path)).moveToTrash();
+        _fileList.erase(_fileList.begin() + _currentIndex);
+        if(_fileList.empty())
+        {
+            _mediaWidget->setMedia("");
+        }
+        _currentIndex = ien::clamp_index_to_vector_bounds(_fileList, _currentIndex);
+        _mediaWidget->setMedia(_fileList[_currentIndex].path);
+        emit currentIndexChanged(_currentIndex);
+        preCacheSurroundings();
+    }
+}
+
 void MainWindow::keyPressEvent(QKeyEvent* ev)
 {
     if (_controls_disabled)
@@ -248,6 +277,9 @@ void MainWindow::keyPressEvent(QKeyEvent* ev)
         break;
     case Qt::Key_M:
         _mediaWidget->toggleMute();
+        break;
+    case Qt::Key_Delete:
+        deleteFile(_fileList[_currentIndex].path);
         break;
     }
 
