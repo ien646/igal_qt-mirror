@@ -181,18 +181,18 @@ std::string getFileInfoString(
     std::variant<const QImage*, const QMovie*, const QMediaPlayer*> currentSource)
 {
     std::stringstream sstr;
-    sstr << "Filename: " << ien::get_file_name(file) << "\n";
-    sstr << "Size: " << static_cast<float>(std::filesystem::file_size(file)) / 1000000 << "MB\n";
+    sstr << "&nbsp;&nbsp;<b>Filename</b>: <i>" << ien::get_file_name(file) << "</i><br>";
+    sstr << "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>Size</b>: <i>" << static_cast<float>(std::filesystem::file_size(file)) / 1000000 << "MB</i><br>";
     if (std::holds_alternative<const QMovie*>(currentSource))
     {
         const QMovie* movie = std::get<const QMovie*>(currentSource);
-        sstr << "Dimensions: " << movie->currentImage().size().width() << "x" << movie->currentImage().size().width()
-             << "\n";
+        sstr << "<b>Dimensions</b>: <i>" << movie->currentImage().size().width() << "x" << movie->currentImage().size().width()
+             << "</i><br>";
     }
     else if (std::holds_alternative<const QImage*>(currentSource))
     {
         const QImage* image = std::get<const QImage*>(currentSource);
-        sstr << "Dimensions: " << image->width() << "x" << image->height() << "\n";
+        sstr << "<b>Dimensions</b>: <i>" << image->width() << "x" << image->height() << "</i><br>";
     }
     else if (std::holds_alternative<const QMediaPlayer*>(currentSource))
     {
@@ -200,7 +200,7 @@ std::string getFileInfoString(
         if (!player->videoTracks().isEmpty())
         {
             const auto resolution = player->videoTracks()[0].value(QMediaMetaData::Resolution).toSize();
-            sstr << "Dimensions: " << resolution.width() << "x" << resolution.height() << "\n";
+            sstr << "<b>Dimensions</b>: <i>" << resolution.width() << "x" << resolution.height() << "</i><br>";
         }
     }
 

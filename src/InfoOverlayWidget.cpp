@@ -36,6 +36,7 @@ InfoOverlayWidget::InfoOverlayWidget(QWidget* parent)
     _info_label->setFocusPolicy(Qt::FocusPolicy::NoFocus);
     _info_label->setAttribute(Qt::WidgetAttribute::WA_TransparentForMouseEvents);
     _info_label->setWordWrap(false);
+    _info_label->setTextFormat(Qt::TextFormat::RichText);
 
     QGraphicsDropShadowEffect* dropShadow = new QGraphicsDropShadowEffect(this);    
     dropShadow->setBlurRadius(0);
