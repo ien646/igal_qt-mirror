@@ -24,12 +24,13 @@ enum class CurrentMediaType
 class MediaWidget : public QWidget
 {
     Q_OBJECT
+
 public:
     MediaWidget(QWidget* parent = nullptr);
 
     void setMedia(const std::string& source);
 
-    std::variant<const QImage*, const QMovie*, const QMediaPlayer*> currentMediaSource();    
+    std::variant<const QImage*, const QMovie*, const QMediaPlayer*> currentMediaSource();
     bool isInfoShown();
     void showMessage(const QString& message);
     void showInfo(const QString& info);
@@ -40,6 +41,14 @@ public:
     void resizeEvent(QResizeEvent* ev) override;
 
     CachedMediaProxy& cachedMediaProxy();
+
+    void zoomIn(float amount);
+    void zoomOut(float amount);
+    void translateLeft(float amount);
+    void translateRight(float amount);
+    void translateUp(float amount);
+    void translateDown(float amount);
+    void resetTransform();
 
 private:
     std::string _target;
@@ -55,9 +64,13 @@ private:
     std::unique_ptr<QPixmap> _pixmap;
     std::shared_ptr<QMovie> _animation;
 
-    QLabel* _imageLabel = nullptr;    
-    VideoPlayerWidget* _videoPlayer = nullptr;    
+    QLabel* _imageLabel = nullptr;
+    VideoPlayerWidget* _videoPlayer = nullptr;
     InfoOverlayWidget* _infoOverlay = nullptr;
 
+    float _currentZoom = 1.0f;
+    QPointF _currentTranslation = { 0.0f, 0.0f };
+
     void syncAnimationSize();
+    void updateTransform();    
 };

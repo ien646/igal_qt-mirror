@@ -15,12 +15,13 @@ struct FileEntry
     time_t mtime;
 };
 
-class MainWindow : public QMainWindow 
+class MainWindow : public QMainWindow
 {
     Q_OBJECT
+
 public:
     MainWindow(const std::string& target_path);
-    
+
     void keyPressEvent(QKeyEvent* ev) override;
 
 signals:
@@ -37,6 +38,8 @@ private:
     ListSelectWidget* _upscaleSelectWidget = nullptr;
     ListSelectWidget* _navigateSelectWidget = nullptr;
     bool _controls_disabled = false;
+    float _currentZoom = 1.0f;
+    QPointF _currentTranslation = { 0.0f, 0.0f };
 
     void loadFiles();
     void nextEntry(int times = 1);
