@@ -21,7 +21,6 @@ int main(int argc, char** argv)
             path = ien::get_current_user_homedir();
         }
 
-        QFontDatabase::addApplicationFont(":/Pokemon Classic.ttf");
         QFontDatabase::addApplicationFont(":/JohtoMono-Regular.otf");
 
         MainWindow window(path);
