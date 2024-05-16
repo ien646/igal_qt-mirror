@@ -268,35 +268,8 @@ void MainWindow::keyPressEvent(QKeyEvent* ev)
     const auto shift = ev->modifiers().testFlag(Qt::KeyboardModifier::ShiftModifier);
     const auto alt = ev->modifiers().testFlag(Qt::KeyboardModifier::AltModifier);
     const auto numpad = ev->modifiers().testFlag(Qt::KeyboardModifier::KeypadModifier);
-
-    if (numpad)
-    {
-        switch (ev->key())
-        {
-        case Qt::Key_4:
-            _mediaWidget->translateLeft(0.2f);
-            break;
-        case Qt::Key_6:
-            _mediaWidget->translateRight(0.2f);
-            break;
-        case Qt::Key_2:
-            _mediaWidget->translateUp(0.2f);
-            break;
-        case Qt::Key_8:
-            _mediaWidget->translateDown(0.2f);
-            break;
-        case Qt::Key_Plus:
-            _mediaWidget->zoomIn(0.25f);
-            break;
-        case Qt::Key_Minus:
-            _mediaWidget->zoomOut(0.25f);
-            break;
-        case Qt::Key_0:
-            _mediaWidget->resetTransform();
-            break;
-        }
-    }
-    else if (ctrl && shift && !_fileList.empty())
+    
+    if (ctrl && shift && !_fileList.empty())
     {
         if (ev->key() == Qt::Key_Plus)
         {
@@ -330,6 +303,33 @@ void MainWindow::keyPressEvent(QKeyEvent* ev)
         _navigateSelectWidget->show();
         _navigateSelectWidget->setFocus(Qt::FocusReason::MouseFocusReason);
         _mediaLayout->setCurrentWidget(_navigateSelectWidget);
+    }
+    else if (numpad)
+    {
+        switch (ev->key())
+        {
+        case Qt::Key_4:
+            _mediaWidget->translateLeft(0.2f);
+            break;
+        case Qt::Key_6:
+            _mediaWidget->translateRight(0.2f);
+            break;
+        case Qt::Key_2:
+            _mediaWidget->translateUp(0.2f);
+            break;
+        case Qt::Key_8:
+            _mediaWidget->translateDown(0.2f);
+            break;
+        case Qt::Key_Plus:
+            _mediaWidget->zoomIn(0.25f);
+            break;
+        case Qt::Key_Minus:
+            _mediaWidget->zoomOut(0.25f);
+            break;
+        case Qt::Key_0:
+            _mediaWidget->resetTransform();
+            break;
+        }
     }
     else
     {
