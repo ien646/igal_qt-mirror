@@ -56,4 +56,5 @@ private:
     void upscaleImage(const std::string& path, const std::string& model);
     void navigateDir(const std::string& path);
     void deleteFile(const std::string& path);
+    void openDir();
 };

@@ -80,11 +80,13 @@ void ListSelectWidget::keyPressEvent(QKeyEvent* ev)
         QLabel* label = dynamic_cast<QLabel*>(_layout->itemAt(_selectedIndex + 1)->widget());
         if (label)
         {
+            _selectedIndex = 0;
             emit itemSelected(label->text().toStdString());
         }
     }
     else if (ev->key() == Qt::Key_Escape)
     {
+        _selectedIndex = 0;
         emit cancelled();
     }
     _layout->itemAt(_selectedIndex + 1)->widget()->setStyleSheet(SELECTED_STYLESHEET);

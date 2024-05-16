@@ -1,6 +1,7 @@
 #include "MainWindow.hpp"
 
 #include <QFile>
+#include <QFileDialog>
 #include <QMessageBox>
 
 #include <ien/container_utils.hpp>
@@ -230,6 +231,32 @@ void MainWindow::deleteFile(const std::string& path)
     }
 }
 
+void MainWindow::openDir()
+{
+    QFileDialog diag(this, "Open directory");
+    diag.setFileMode(QFileDialog::FileMode::Directory);
+    diag.setAcceptMode(QFileDialog::AcceptMode::AcceptOpen);
+    diag.setViewMode(QFileDialog::ViewMode::Detail);
+
+    diag.exec();
+
+    const auto dir = diag.directory();
+    if (std::filesystem::exists(dir.filesystemPath()))
+    {
+        _targetDir = dir.filesystemPath();
+        loadFiles();
+        _currentIndex = 0;
+        if (_fileList.empty())
+        {
+            _mediaWidget->setMedia("");
+        }
+        else
+        {
+            _mediaWidget->setMedia(_fileList[_currentIndex].path);
+        }
+    }
+}
+
 void MainWindow::keyPressEvent(QKeyEvent* ev)
 {
     if (_controls_disabled)
@@ -346,12 +373,16 @@ void MainWindow::keyPressEvent(QKeyEvent* ev)
         case Qt::Key_Delete:
             deleteFile(_fileList[_currentIndex].path);
             break;
+        case Qt::Key_O:
+            openDir();
+            break;
         }
     }
 }
 
 void MainWindow::loadFiles()
 {
+    _mediaWidget->cachedMediaProxy().clear();
     _fileList.clear();
     for (const auto& entry : std::filesystem::directory_iterator(_targetDir))
     {
