@@ -4,7 +4,7 @@ set(PROJECT_NAME igal_qt)
 
 include(cmake/CPM.cmake)
 
-project(igal_qt VERSION 1.0.0)
+project(igal_qt VERSION 1.0.1)
 
 CPMAddPackage(
     NAME libien
