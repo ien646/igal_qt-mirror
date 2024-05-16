@@ -54,11 +54,12 @@ bool hasMediaExtension(const std::string& path)
 
 bool isImage(const std::string& source)
 {
+    const auto ext = ien::str_tolower(ien::get_file_extension(source));
     if (isAnimation(source))
     {
         return false;
     }
-    return IMAGE_EXTENSIONS.count(std::filesystem::path(source).extension());
+    return IMAGE_EXTENSIONS.count(ext);
 }
 
 bool isAnimation(const std::string& path)
