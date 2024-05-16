@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=igal_qt
+Path=/opt/igal_qt/bin
+Exec=/opt/igal_qt/bin/igal_qt %u
+Terminal=false
+Icon=/opt/igal_qt/rsc/igal_qt.png
+Categories=Graphics

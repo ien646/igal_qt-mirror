@@ -2,5 +2,7 @@
     <qresource>
         <file>icon_pause.png</file>
         <file>icon_play.png</file>
+        <file>igal_qt.png</file>
+        <file>igal_qt.ico</file>
     </qresource>
 </RCC>

@@ -9,6 +9,11 @@
 int main(int argc, char** argv)
 {
     QApplication app(argc, argv);
+
+    const QIcon icon(":/igal_qt.png");
+    app.setWindowIcon(icon);
+
+    QGuiApplication::setWindowIcon(icon);
     try
     {
         std::string path;
@@ -24,6 +29,7 @@ int main(int argc, char** argv)
         QFontDatabase::addApplicationFont(":/JohtoMono-Regular.otf");
 
         MainWindow window(path);
+        window.setWindowIcon(icon);
         window.show();
 
         app.exec();
