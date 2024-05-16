@@ -30,6 +30,7 @@ int main(int argc, char** argv)
 
         MainWindow window(path);
         window.setWindowIcon(icon);
+        window.setWindowTitle("IGAL-QT");
         window.show();
 
         app.exec();
