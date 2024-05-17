@@ -21,6 +21,8 @@ CPMAddPackage(
 
 find_package(Qt6 COMPONENTS Widgets Multimedia MultimediaWidgets REQUIRED)
 
+qt_standard_project_setup()
+
 qt_add_executable(${PROJECT_NAME}
     "src/main.cpp"
 
