@@ -48,7 +48,10 @@ void MediaWidget::setMedia(const std::string& source)
     _videoPlayer->hide();
     _videoPlayer->mediaPlayer()->stop();
     _imageLabel->hide();
-    _animation->stop();
+    if(_animation)
+    {
+        _animation->stop();
+    }
 
     if (isVideo(_target))
     {
