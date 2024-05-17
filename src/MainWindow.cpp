@@ -173,19 +173,18 @@ void MainWindow::upscaleImage(const std::string& path, const std::string& model)
         runCommand(command, args, [this](std::string text) {
             QMetaObject::invokeMethod(this, [=, this] { _mediaWidget->showMessage(QString::fromStdString(text)); });
         });
-        QMetaObject::invokeMethod(this, [=, this] {
-            QImage img(QString::fromStdString(targetpath));
-            QImage scaledImg = img.scaledToWidth(img.width() / 2, Qt::TransformationMode::SmoothTransformation);
-            scaledImg.save(QString::fromStdString(targetpath), "JPG", 95);
+        
+        QImage img(QString::fromStdString(targetpath));
+        QImage scaledImg = img.scaledToWidth(img.width() / 2, Qt::TransformationMode::SmoothTransformation);
+        scaledImg.save(QString::fromStdString(targetpath), "JPG", 95);
+        const auto mtime = ien::get_file_mtime(path);
+        QFile::moveToTrash(QString::fromStdString(path));
+        const auto finalPath = path.ends_with(".jpg") ? path : path + ".jpg";
 
-            const auto mtime = ien::get_file_mtime(path);
-            QFile::moveToTrash(QString::fromStdString(path));
+        std::filesystem::rename(targetpath, finalPath);
+        ien::set_file_mtime(finalPath, mtime);
 
-            const auto finalPath = path.ends_with(".jpg") ? path : path + ".jpg";
-
-            std::filesystem::rename(targetpath, finalPath);
-            ien::set_file_mtime(finalPath, mtime);
-
+        QMetaObject::invokeMethod(this, [=, this] {     
             _mediaWidget->showMessage("Finished!");
             _controls_disabled = false;
             loadFiles();
