@@ -48,6 +48,7 @@ void MediaWidget::setMedia(const std::string& source)
     _videoPlayer->hide();
     _videoPlayer->mediaPlayer()->stop();
     _imageLabel->hide();
+    _animation->stop();
 
     if (isVideo(_target))
     {
@@ -59,10 +60,10 @@ void MediaWidget::setMedia(const std::string& source)
     {
         _currentMedia = CurrentMediaType::Animation;
         _animation = _cachedMediaProxy.getAnimation(source);
+        connectAnimationSignals();
         _imageLabel->setPixmap(QPixmap());
-        _imageLabel->setMovie(_animation.get());
-        syncAnimationSize();
         _animation->start();
+        syncAnimationSize();
         _imageLabel->show();
     }
     else if (isImage(_target))
@@ -200,28 +201,11 @@ void MediaWidget::translateDown(float amount)
 
 void MediaWidget::syncAnimationSize()
 {
-    const auto currentSize = _animation->scaledSize();
-    const auto aspectRatio = static_cast<float>(currentSize.width()) / currentSize.height();
-
-    if (static_cast<float>(size().width()) * aspectRatio <= size().height())
-    {
-        _animation->setScaledSize(
-            QSize{ size().width(), static_cast<int>(static_cast<float>(size().width()) * aspectRatio) });
-    }
-    else
-    {
-        _animation->setScaledSize(
-            QSize{ static_cast<int>(static_cast<float>(size().height()) * aspectRatio), size().height() });
-    }
+    updateTransform();
 }
 
 void MediaWidget::updateTransform()
 {
-    if (_currentMedia != CurrentMediaType::Image)
-    {
-        return;
-    }
-
     _currentTranslation.setX(std::clamp(_currentTranslation.x(), -1.0, 1.0));
     _currentTranslation.setY(std::clamp(_currentTranslation.y(), -1.0, 1.0));
 
@@ -255,4 +239,12 @@ void MediaWidget::resetTransform()
     _currentZoom = 1.0f;
     _currentTranslation = { 0.0f, 0.0f };
     updateTransform();
+}
+
+void MediaWidget::connectAnimationSignals()
+{
+    connect(_animation.get(), &QMovie::frameChanged, this, [this](int frame) {
+        _image = std::make_shared<QImage>(_animation->currentImage());
+        updateTransform();
+    });
 }

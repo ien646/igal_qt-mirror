@@ -72,4 +72,6 @@ private:
 
     void syncAnimationSize();
     void updateTransform();    
+
+    void connectAnimationSignals();
 };
