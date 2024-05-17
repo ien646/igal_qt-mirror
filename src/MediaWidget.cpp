@@ -32,6 +32,7 @@ MediaWidget::MediaWidget(QWidget* parent)
     _imageLabel->setAlignment(Qt::AlignVCenter | Qt::AlignHCenter);
     _imageLabel->setMinimumSize(600, 400);
     _imageLabel->setContentsMargins(0, 0, 0, 0);
+    _imageLabel->setScaledContents(true);
     _imageLabel->hide();
 
     _videoPlayer->setMinimumSize(600, 400);
@@ -68,9 +69,8 @@ void MediaWidget::setMedia(const std::string& source)
     {
         _currentMedia = CurrentMediaType::Image;
         _image = _cachedMediaProxy.getImage(source);
-        _pixmap = std::make_unique<QPixmap>(QPixmap::fromImage(*_image));
         _imageLabel->setMovie(nullptr);
-        _imageLabel->setPixmap(_pixmap->scaled(size(), Qt::KeepAspectRatio, Qt::TransformationMode::SmoothTransformation));
+        updateTransform();
         _imageLabel->show();
     }
 }
@@ -142,8 +142,7 @@ void MediaWidget::resizeEvent(QResizeEvent* ev)
 {
     if (_currentMedia == CurrentMediaType::Image)
     {
-        _imageLabel->setPixmap(
-            _pixmap->scaled(ev->size(), Qt::KeepAspectRatio, Qt::TransformationMode::SmoothTransformation));
+        updateTransform();
         _imageLabel->setFixedSize(ev->size());
         _imageLabel->setMinimumSize(600, 400);
     }
@@ -226,10 +225,11 @@ void MediaWidget::updateTransform()
     _currentTranslation.setX(std::clamp(_currentTranslation.x(), -1.0, 1.0));
     _currentTranslation.setY(std::clamp(_currentTranslation.y(), -1.0, 1.0));
 
+    const auto currentSize = size();
     const auto aspectRatio = static_cast<float>(size().width()) / size().height();
 
-    const auto pixmapSize = _pixmap->size();
-    auto sourceRectSize = (_pixmap->size() / _currentZoom);
+    const auto pixmapSize = _image->size();
+    auto sourceRectSize = (_image->size() / _currentZoom);
     sourceRectSize.setWidth(sourceRectSize.height() * aspectRatio);
     sourceRectSize.setHeight(sourceRectSize.width() / aspectRatio);
     const auto diff = pixmapSize - sourceRectSize;
@@ -243,7 +243,11 @@ void MediaWidget::updateTransform()
         sourceRectSize.width(),
         sourceRectSize.height());
 
-    _imageLabel->setPixmap(_pixmap->copy(sourceRect).scaled(size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    auto imageRect = _image->copy(sourceRect);
+    const QSize targetSize = imageRect.size().scaled(size() * devicePixelRatio(), Qt::KeepAspectRatio);
+    auto pixmap = QPixmap::fromImage(imageRect.scaled(targetSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+    _imageLabel->setPixmap(pixmap);
+    _imageLabel->setScaledContents(true);
 }
 
 void MediaWidget::resetTransform()

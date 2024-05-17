@@ -61,7 +61,6 @@ private:
 
     CachedMediaProxy _cachedMediaProxy;
     std::shared_ptr<QImage> _image;
-    std::unique_ptr<QPixmap> _pixmap;
     std::shared_ptr<QMovie> _animation;
 
     QLabel* _imageLabel = nullptr;
