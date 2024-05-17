@@ -173,6 +173,15 @@ void MainWindow::upscaleImage(const std::string& path, const std::string& model)
         runCommand(command, args, [this](std::string text) {
             QMetaObject::invokeMethod(this, [=, this] { _mediaWidget->showMessage(QString::fromStdString(text)); });
         });
+
+        if(!std::filesystem::exists(targetpath))
+        {
+            _mediaWidget->showMessage("Upscale command failed!");
+            QMetaObject::invokeMethod(this, [this]{
+                _controls_disabled = false;
+            });
+            return;
+        }
         
         QImage img(QString::fromStdString(targetpath));
         QImage scaledImg = img.scaledToWidth(img.width() / 2, Qt::TransformationMode::SmoothTransformation);
