@@ -11,6 +11,7 @@
 
 #include <cstdio>
 #include <filesystem>
+#include <span>
 #include <sstream>
 #include <unordered_set>
 
@@ -125,7 +126,7 @@ std::unordered_map<int, std::string> getLinksFromFile(const std::string& path)
             continue;
         }
 
-        result.emplace(seq[0], segments[1]);
+        result.emplace(seq[0].key(), segments[1]);
     }
     return result;
 }
@@ -210,7 +211,7 @@ std::string getFileInfoString(
 
 const QFont& getTextFont(int size)
 {
-    static const QFont font = [&] -> QFont {
+    static const QFont font = [&]() -> QFont {
         QFont result("Johto Mono", size);
         result.setStyleHint(QFont::TypeWriter, QFont::StyleStrategy::NoAntialias);
         return result;

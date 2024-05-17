@@ -5,6 +5,7 @@
 #include <QMediaPlayer>
 #include <QMovie>
 
+#include <functional>
 #include <string>
 #include <unordered_map>
 #include <variant>

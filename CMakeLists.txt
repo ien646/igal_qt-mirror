@@ -6,6 +6,13 @@ include(cmake/CPM.cmake)
 
 project(igal_qt VERSION 1.0.3)
 
+if(WIN32)
+    if(DEFINED ENV{QTDIR})
+        set(CMAKE_PREFIX_PATH $ENV{QTDIR})
+        add_definitions(-DUNICODE -D_UNICODE)
+    endif()
+endif()
+
 CPMAddPackage(
     NAME libien
     GIT_REPOSITORY https://github.com/ien646/libien

@@ -98,7 +98,7 @@ MainWindow::MainWindow(const std::string& target_path)
     connect(_upscaleSelectWidget, &ListSelectWidget::cancelled, this, [this] { _upscaleSelectWidget->hide(); });
 
     connect(_navigateSelectWidget, &ListSelectWidget::itemSelected, this, [this](const std::string& selected) {
-        const auto newDir = _targetDir + std::filesystem::path::preferred_separator + selected;
+        const auto newDir = _targetDir + "/" + selected;
         if (std::filesystem::exists(newDir))
         {
             navigateDir(newDir);
@@ -243,7 +243,7 @@ void MainWindow::openDir()
     const auto dir = diag.directory();
     if (std::filesystem::exists(dir.filesystemPath()))
     {
-        _targetDir = dir.filesystemPath();
+        _targetDir = dir.filesystemPath().string();
         loadFiles();
         _currentIndex = 0;
         if (_fileList.empty())
@@ -386,11 +386,11 @@ void MainWindow::loadFiles()
     _fileList.clear();
     for (const auto& entry : std::filesystem::directory_iterator(_targetDir))
     {
-        if (entry.is_regular_file() && hasMediaExtension(entry.path()))
+        if (entry.is_regular_file() && hasMediaExtension(entry.path().string()))
         {
-            const auto path = entry.path();
+            const auto path = entry.path().string();
             const auto mtime = ien::get_file_mtime(path);
-            _fileList.push_back(FileEntry{ path, mtime });
+            _fileList.push_back(FileEntry{ .path = path, .mtime = mtime });
         }
     }
 

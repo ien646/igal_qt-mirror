@@ -1,6 +1,7 @@
 #include "CachedMediaProxy.hpp"
 
 #include <filesystem>
+#include <future>
 
 #include "Utils.hpp"
 
@@ -67,7 +68,7 @@ void CachedMediaProxy::preCacheImage(const std::string& path)
         return;
     }
 
-    std::future<CachedImage> future = std::async(std::launch::async, [&] -> CachedImage {
+    std::future<CachedImage> future = std::async(std::launch::async, [&]() -> CachedImage {
         QImage image(QString::fromStdString(path));
         time_t now = std::chrono::system_clock::now().time_since_epoch().count();
         return CachedImage(path, now, std::move(image));

@@ -5,6 +5,7 @@
 
 #include <future>
 #include <memory>
+#include <unordered_map>
 
 class CachedImage
 {
