@@ -78,4 +78,14 @@ if(LINUX)
     )
 endif()
 
+if(WIN32)
+    find_program(WINDEPLOYQT NAMES windeployqt.exe HINTS ${CMAKE_PREFIX_PATH} REQUIRED)
+    add_custom_command(
+        TARGET ${PROJECT_NAME}
+        POST_BUILD
+        COMMAND ${WINDEPLOYQT} $<TARGET_FILE:${PROJECT_NAME}>
+        WORKING_DIRECTORY $<TARGET_FILE_DIR:${PROJECT_NAME}>
+    )
+endif()
+
 include(cmake/CPackSettings.cmake)
