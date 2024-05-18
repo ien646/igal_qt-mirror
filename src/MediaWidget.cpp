@@ -63,6 +63,7 @@ void MediaWidget::setMedia(const std::string& source)
     {
         _currentMedia = CurrentMediaType::Animation;
         _animation = _cachedMediaProxy.getAnimation(source);
+        _animation->setCacheMode(QMovie::CacheMode::CacheAll);
         connectAnimationSignals();
         _imageLabel->setPixmap(QPixmap());
         _animation->start();
