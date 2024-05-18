@@ -1,5 +1,7 @@
 #include "VideoPlayerWidget.hpp"
 
+#include <ien/activity.hpp>
+
 #include <QResizeEvent>
 
 VideoPlayerWidget::VideoPlayerWidget(QWidget* parent)
@@ -92,6 +94,7 @@ void VideoPlayerWidget::setupConnections()
         {
             _video_controls->setCurrentVideoDuration(_media_player->duration());
             _video_controls->setCurrentVideoPosition(pos);
+            ien::simulate_user_activity();
         }
     });
 
