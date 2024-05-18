@@ -11,6 +11,7 @@ VideoPlayerWidget::VideoPlayerWidget(QWidget* parent)
     this->setAlignment(Qt::AlignmentFlag::AlignCenter);
     this->setHorizontalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOff);
     this->setVerticalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOff);
+    this->setRenderHints(QPainter::RenderHint::Antialiasing | QPainter::RenderHint::SmoothPixmapTransform | QPainter::RenderHint::VerticalSubpixelPositioning);
 
     _main_layout = new QStackedLayout(this);
     _video_controls = new VideoControls(this);
@@ -27,12 +28,12 @@ VideoPlayerWidget::VideoPlayerWidget(QWidget* parent)
 
     _audio_output->setVolume(0.5f);    
 
-    _scene_rect = _scene->addRect(rect());
+    _scene_rect = _scene->addRect(QRect(QPoint(0, 0), size() * devicePixelRatio()));
     _scene_rect->setPen(Qt::NoPen);
 
     _video_item = new QGraphicsVideoItem(_scene_rect);
     _video_item->setAspectRatioMode(Qt::AspectRatioMode::KeepAspectRatio);
-    _video_item->setSize(size());
+    _video_item->setSize(size() * devicePixelRatio());
     _scene->addItem(_video_item);
 
     _media_player->setVideoOutput(_video_item);
@@ -121,8 +122,10 @@ void VideoPlayerWidget::paintEvent(QPaintEvent* ev)
 
 void VideoPlayerWidget::resizeEvent(QResizeEvent* ev)
 {
-    _scene->setSceneRect(rect());
-    _scene_rect->setRect(rect());
+    const QRect scaledRect = QRect(QPoint(0, 0), ev->size() * devicePixelRatio());
+    setGeometry(scaledRect);
+    _scene->setSceneRect(scaledRect);
+    _scene_rect->setRect(scaledRect);
     _video_item->setSize(ev->size());
 
     _video_controls->setFixedSize(ev->size());
