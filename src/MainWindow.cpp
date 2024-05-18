@@ -169,6 +169,11 @@ void MainWindow::upscaleImage(const std::string& path, const std::string& model)
     std::thread thread([=, this] {
         const std::string targetpath = std::format("{}/up2_{}", ien::get_file_directory(path), ien::get_file_name(path));
         const std::string command = "realesrgan-ncnn-vulkan";
+        if(!ien::exists_in_envpath(command))
+        {
+            _controls_disabled = false;
+            return;
+        }
         const std::vector<std::string> args = { "-i", path, "-o", targetpath, "-n", model, "-f", "jpg" };
         runCommand(command, args, [this](std::string text) {
             QMetaObject::invokeMethod(this, [=, this] { _mediaWidget->showMessage(QString::fromStdString(text)); });
@@ -177,9 +182,7 @@ void MainWindow::upscaleImage(const std::string& path, const std::string& model)
         if(!std::filesystem::exists(targetpath))
         {
             _mediaWidget->showMessage("Upscale command failed!");
-            QMetaObject::invokeMethod(this, [this]{
-                _controls_disabled = false;
-            });
+            _controls_disabled = false;
             return;
         }
         
