@@ -48,7 +48,7 @@ void MediaWidget::setMedia(const std::string& source)
     _videoPlayer->hide();
     _videoPlayer->mediaPlayer()->stop();
     _imageLabel->hide();
-    if(_animation)
+    if (_animation)
     {
         _animation->stop();
     }
@@ -135,10 +135,21 @@ void MediaWidget::paintEvent(QPaintEvent* ev)
     if (!std::filesystem::exists(_target))
     {
         QPainter painter(this);
-        painter.setFont(getTextFont(24));
-        painter.setBrush(QBrush(QColor("#CCDD00")));
-        painter.setPen(QColor("#CCDD00"));
-        painter.drawText(QPoint(16, 48), "No media");
+        auto now = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch());
+        if (now.count() % 2 == 0)
+        {
+            painter.setFont(getTextFont(24));
+            painter.setBrush(QBrush(QColor("#CCDD00")));
+            painter.setPen(QColor("#CCDD00"));
+            painter.drawText(QPoint(24, 48), "No media");
+        }
+        else
+        {
+            painter.setBrush(QBrush(QColor("#000000")));
+            painter.setPen(QColor("#000000"));
+            painter.drawRect(16, 48, 100, -100);
+        }
+        update();
     }
 }
 

@@ -184,12 +184,13 @@ std::string getFileInfoString(
 {
     std::stringstream sstr;
     sstr << "&nbsp;&nbsp;<b>Filename</b>: <i>" << ien::get_file_name(file) << "</i><br>";
-    sstr << "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>Size</b>: <i>" << static_cast<float>(std::filesystem::file_size(file)) / 1000000 << "MB</i><br>";
+    sstr << "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>Size</b>: <i>"
+         << static_cast<float>(std::filesystem::file_size(file)) / 1000000 << "MB</i><br>";
     if (std::holds_alternative<const QMovie*>(currentSource))
     {
         const QMovie* movie = std::get<const QMovie*>(currentSource);
-        sstr << "<b>Dimensions</b>: <i>" << movie->currentImage().size().width() << "x" << movie->currentImage().size().width()
-             << "</i><br>";
+        sstr << "<b>Dimensions</b>: <i>" << movie->currentImage().size().width() << "x"
+             << movie->currentImage().size().width() << "</i><br>";
     }
     else if (std::holds_alternative<const QImage*>(currentSource))
     {
@@ -209,35 +210,31 @@ std::string getFileInfoString(
     return sstr.str();
 }
 
-const QFont& getTextFont(int size)
+QFont getTextFont(int size)
 {
-    static const QFont font = [&]() -> QFont {
-        QFont result("Johto Mono", size);
-        result.setStyleHint(QFont::TypeWriter, QFont::StyleStrategy::NoAntialias);
-        return result;
-    }();
-
-    return font;
+    QFont result("Johto Mono", size);
+    result.setStyleHint(QFont::TypeWriter, QFont::StyleStrategy::NoAntialias);
+    return result;
 }
 
 void runCommand(const std::string& command, const std::vector<std::string>& args, std::function<void(std::string)> messageCallback)
 {
     QStringList cmdargs;
-    for(const auto& a : args)
+    for (const auto& a : args)
     {
         cmdargs.push_back(QString::fromStdString(a));
     }
     QProcess proc;
     proc.start(QString::fromStdString(command), cmdargs);
 
-    while(!proc.waitForFinished(10))
+    while (!proc.waitForFinished(10))
     {
         auto message = proc.readAllStandardOutput() + proc.readAllStandardError();
-        if(message.endsWith("\n"))
+        if (message.endsWith("\n"))
         {
             message = message.first(message.size() - 1);
         }
-        if(!message.isEmpty())
+        if (!message.isEmpty())
         {
             messageCallback(message.toStdString());
         }
