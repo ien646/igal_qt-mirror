@@ -387,6 +387,9 @@ void MainWindow::keyPressEvent(QKeyEvent* ev)
         case Qt::Key_O:
             openDir();
             break;
+        case Qt::Key_Space:
+            _mediaWidget->togglePlayPauseVideo();
+            break;
         }
     }
 }

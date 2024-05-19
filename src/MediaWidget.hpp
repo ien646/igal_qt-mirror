@@ -36,6 +36,7 @@ public:
     void showInfo(const QString& info);
     void hideInfo();
     void toggleMute();
+    void togglePlayPauseVideo();
 
     void paintEvent(QPaintEvent* ev) override;
     void resizeEvent(QResizeEvent* ev) override;

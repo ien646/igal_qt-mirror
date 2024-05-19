@@ -131,6 +131,21 @@ void MediaWidget::toggleMute()
     }
 }
 
+void MediaWidget::togglePlayPauseVideo()
+{
+    if(_currentMedia == CurrentMediaType::Video)
+    {
+        if(_videoPlayer->mediaPlayer()->isPlaying())
+        {
+            _videoPlayer->mediaPlayer()->pause();
+        }
+        else 
+        {
+            _videoPlayer->mediaPlayer()->play();
+        }
+    }
+}
+
 void MediaWidget::paintEvent(QPaintEvent* ev)
 {
     if (!std::filesystem::exists(_target))
