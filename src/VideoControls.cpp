@@ -38,11 +38,11 @@ VideoControls::VideoControls(QWidget* parent)
 
     _play_label->setPixmap(
         QPixmap::fromImage(QImage(":/icon_play.png"))
-            .scaled(24, 24, Qt::AspectRatioMode::KeepAspectRatio, Qt::TransformationMode::SmoothTransformation));
+            .scaled(16, 16, Qt::AspectRatioMode::KeepAspectRatio, Qt::TransformationMode::SmoothTransformation));
 
     _pause_label->setPixmap(
         QPixmap::fromImage(QImage(":/icon_pause.png"))
-            .scaled(24, 24, Qt::AspectRatioMode::KeepAspectRatio, Qt::TransformationMode::SmoothTransformation));
+            .scaled(16, 16, Qt::AspectRatioMode::KeepAspectRatio, Qt::TransformationMode::SmoothTransformation));
 
     _play_label->setMouseTracking(true);
     _pause_label->setMouseTracking(true);

@@ -13,7 +13,9 @@ VideoPlayerWidget::VideoPlayerWidget(QWidget* parent)
     this->setAlignment(Qt::AlignmentFlag::AlignCenter);
     this->setHorizontalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOff);
     this->setVerticalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOff);
-    this->setRenderHints(QPainter::RenderHint::Antialiasing | QPainter::RenderHint::SmoothPixmapTransform | QPainter::RenderHint::VerticalSubpixelPositioning);
+    this->setRenderHints(
+        QPainter::RenderHint::Antialiasing | QPainter::RenderHint::SmoothPixmapTransform |
+        QPainter::RenderHint::VerticalSubpixelPositioning);
 
     _main_layout = new QStackedLayout(this);
     _video_controls = new VideoControls(this);
@@ -28,7 +30,7 @@ VideoPlayerWidget::VideoPlayerWidget(QWidget* parent)
     _video_controls->setMinimumSize(600, 24);
     _video_controls->setMouseTracking(true);
 
-    _audio_output->setVolume(0.5f);    
+    _audio_output->setVolume(0.5f);
 
     _scene_rect = _scene->addRect(QRect(QPoint(0, 0), size() * devicePixelRatio()));
     _scene_rect->setPen(Qt::NoPen);
