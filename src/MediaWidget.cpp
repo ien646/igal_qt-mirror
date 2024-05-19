@@ -244,9 +244,7 @@ void MediaWidget::updateTransform()
     const auto aspectRatio = static_cast<float>(size().width()) / size().height();
 
     const auto pixmapSize = _image->size();
-    auto sourceRectSize = (_image->size() / _currentZoom);
-    sourceRectSize.setWidth(sourceRectSize.height() * aspectRatio);
-    sourceRectSize.setHeight(sourceRectSize.width() / aspectRatio);
+    auto sourceRectSize = size().scaled(pixmapSize, Qt::KeepAspectRatioByExpanding) / _currentZoom;
     const auto diff = pixmapSize - sourceRectSize;
 
     float translateX = ien::remap(_currentTranslation.x(), -1, 1, -diff.width() / 2, diff.width() / 2);
