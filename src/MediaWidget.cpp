@@ -43,6 +43,7 @@ MediaWidget::MediaWidget(QWidget* parent)
 
 void MediaWidget::setMedia(const std::string& source)
 {
+    qDebug() << "Loading media: " << source;
     _target = source;
 
     _videoPlayer->hide();

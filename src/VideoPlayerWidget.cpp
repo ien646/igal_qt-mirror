@@ -114,7 +114,7 @@ void VideoPlayerWidget::setupConnections()
 
 void VideoPlayerWidget::setMedia(const std::string& src)
 {
-    _media_player->setSource(QUrl(QString::fromStdString(src)));
+    _media_player->setSource(QString::fromStdString(src));
     _media_player->play();
     _video_controls->setCurrentVideoDuration(_media_player->duration());
     _timer->start();
