@@ -111,6 +111,8 @@ MainWindow::MainWindow(const std::string& target_path)
     });
 
     connect(_navigateSelectWidget, &ListSelectWidget::cancelled, this, [this] { _navigateSelectWidget->hide(); });
+
+    setFocus(Qt::FocusReason::MouseFocusReason);
 }
 
 void MainWindow::processCopyToLinkKey(QKeyEvent* ev)
