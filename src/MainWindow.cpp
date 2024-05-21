@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <filesystem>
 
+#include "HelpDialog.hpp"
 #include "Utils.hpp"
 
 MainWindow::MainWindow(const std::string& target_path)
@@ -391,6 +392,11 @@ void MainWindow::keyPressEvent(QKeyEvent* ev)
             break;
         case Qt::Key_Space:
             _mediaWidget->togglePlayPauseVideo();
+            break;
+        case Qt::Key_H:
+            HelpDialog* helpDiag = new HelpDialog(this);
+            helpDiag->show();
+            helpDiag->setFixedSize(helpDiag->size());
             break;
         }
     }

@@ -237,6 +237,11 @@ void MediaWidget::syncAnimationSize()
 
 void MediaWidget::updateTransform()
 {
+    if(!_image)
+    {
+        return;
+    }
+    
     _currentTranslation.setX(std::clamp(_currentTranslation.x(), -1.0, 1.0));
     _currentTranslation.setY(std::clamp(_currentTranslation.y(), -1.0, 1.0));
 

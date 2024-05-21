@@ -73,14 +73,7 @@ VideoControls::VideoControls(QWidget* parent)
     connect(_volume_slider, &QSlider::sliderPressed, this, [this] { emit volumeSliderClicked(); });
     connect(_volume_slider, &QSlider::sliderReleased, this, [this] { emit volumeSliderReleased(); });
 
-    for (const auto& child : children())
-    {
-        auto widget = dynamic_cast<QWidget*>(child);
-        if (widget)
-        {
-            widget->setMouseTracking(true);
-        }
-    }
+    disableFocusOnChildWidgets(this);
 }
 
 void VideoControls::mousePressEvent(QMouseEvent* ev)

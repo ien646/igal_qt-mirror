@@ -4,6 +4,8 @@
 
 #include <QResizeEvent>
 
+#include "Utils.hpp"
+
 VideoPlayerWidget::VideoPlayerWidget(QWidget* parent)
     : QGraphicsView(parent)
 {
@@ -49,6 +51,7 @@ VideoPlayerWidget::VideoPlayerWidget(QWidget* parent)
     _timer->start();
 
     setupConnections();
+    disableFocusOnChildWidgets(this);
 }
 
 void VideoPlayerWidget::setupConnections()

@@ -240,3 +240,14 @@ void runCommand(const std::string& command, const std::vector<std::string>& args
         }
     }
 }
+
+void disableFocusOnChildWidgets(QWidget* widget)
+{
+    for(auto& child : widget->children())
+    {
+        if(auto* widget = dynamic_cast<QWidget*>(child))
+        {
+            widget->setFocusPolicy(Qt::FocusPolicy::NoFocus);
+        }
+    }
+}

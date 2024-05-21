@@ -8,6 +8,7 @@
 InfoOverlayWidget::InfoOverlayWidget(QWidget* parent)
     : QWidget(parent)
 {
+    setFocusPolicy(Qt::FocusPolicy::NoFocus);
     setAttribute(Qt::WidgetAttribute::WA_TransparentForMouseEvents);
     setStyleSheet("QWidget{background-color:rgba(0, 0, 0, 0);}");
 
@@ -55,6 +56,8 @@ InfoOverlayWidget::InfoOverlayWidget(QWidget* parent)
 
     _message_label->hide();
     _info_label->hide();
+
+    disableFocusOnChildWidgets(this);
 }
 
 bool InfoOverlayWidget::isInfoShown()

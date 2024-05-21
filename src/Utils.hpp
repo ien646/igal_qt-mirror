@@ -4,6 +4,7 @@
 #include <QImage>
 #include <QMediaPlayer>
 #include <QMovie>
+#include <QWidget>
 
 #include <functional>
 #include <string>
@@ -33,3 +34,5 @@ std::string getFileInfoString(const std::string& file, std::variant<const QImage
 QFont getTextFont(int size = 8);
 
 void runCommand(const std::string& command, const std::vector<std::string>& args, std::function<void(std::string)> messageCallback);
+
+void disableFocusOnChildWidgets(QWidget* widget);
