@@ -4,10 +4,25 @@
 
 #include <ien/fs_utils.hpp>
 
+#include <iostream>
+
 #include "MainWindow.hpp"
+
+#ifdef IGAL_QT_VERSION
+constexpr const char* APP_VERSION = IGAL_QT_VERSION;
+#else
+constexpr const char* APP_VERSION = "0.0.0";
+#endif
 
 int main(int argc, char** argv)
 {
+    const std::string path = argc > 1 ? argv[1] : ien::get_current_user_homedir();
+    if (path == "--version")
+    {
+        std::cout << "Version: " << APP_VERSION << std::endl;
+        return 0;
+    }
+
     QApplication app(argc, argv);
 
     const QIcon icon(":/igal_qt.png");
@@ -16,25 +31,15 @@ int main(int argc, char** argv)
     QGuiApplication::setWindowIcon(icon);
     try
     {
-        std::string path;
-        if (argc > 1)
-        {
-            path = argv[1];
-        }
-        else
-        {
-            path = ien::get_current_user_homedir();
-        }
-
         QFontDatabase::addApplicationFont(":/JohtoMono-Regular.otf");
 
         MainWindow window(path);
         window.setWindowIcon(icon);
-        #ifdef IGAL_QT_VERSION
-            window.setWindowTitle(QString::fromStdString(std::format("IGAL-QT <{}>", IGAL_QT_VERSION)));
-        #else
-            window.setWindowTitle("IGAL-QT");
-        #endif
+#ifdef IGAL_QT_VERSION
+        window.setWindowTitle(QString::fromStdString(std::format("IGAL-QT <{}>", IGAL_QT_VERSION)));
+#else
+        window.setWindowTitle("IGAL-QT");
+#endif
 
         window.resize(1000, 800);
         window.show();
@@ -42,7 +47,7 @@ int main(int argc, char** argv)
         app.exec();
         return 0;
     }
-    catch(const std::exception& ex)
+    catch (const std::exception& ex)
     {
         QMessageBox msgbox;
         msgbox.setStandardButtons(QMessageBox::StandardButton::Ok);
