@@ -172,38 +172,44 @@ void MainWindow::upscaleImage(const std::string& path, const std::string& model)
     std::thread thread([=, this] {
         const std::string targetpath = std::format("{}/up2_{}", ien::get_file_directory(path), ien::get_file_name(path));
         const std::string command = "realesrgan-ncnn-vulkan";
-        if(!ien::exists_in_envpath(command))
+        if (!ien::exists_in_envpath(command))
         {
             _controls_disabled = false;
             return;
         }
-        const std::vector<std::string> args = { "-i", path, "-o", targetpath, "-n", model, "-f", "jpg" };
+
+        const auto extension = ien::str_tolower(ien::get_file_extension(path)).substr(1);
+
+        const std::vector<std::string> args = { "-i", path, "-o", targetpath, "-n", model, "-f", extension };
         runCommand(command, args, [this](std::string text) {
             QMetaObject::invokeMethod(this, [=, this] { _mediaWidget->showMessage(QString::fromStdString(text)); });
         });
 
-        if(!std::filesystem::exists(targetpath))
+        if (!std::filesystem::exists(targetpath))
         {
             _mediaWidget->showMessage("Upscale command failed!");
             _controls_disabled = false;
             return;
         }
-        
+
         QImage img(QString::fromStdString(targetpath));
         QImage scaledImg = img.scaledToWidth(img.width() / 2, Qt::TransformationMode::SmoothTransformation);
-        scaledImg.save(QString::fromStdString(targetpath), "JPG", 95);
+        scaledImg.save(QString::fromStdString(targetpath), extension.c_str(), 95);
         const auto mtime = ien::get_file_mtime(path);
         QFile::moveToTrash(QString::fromStdString(path));
-        const auto finalPath = path.ends_with(".jpg") ? path : path + ".jpg";
 
-        std::filesystem::rename(targetpath, finalPath);
-        ien::set_file_mtime(finalPath, mtime);
+        std::filesystem::rename(targetpath, path);
+        ien::set_file_mtime(path, mtime);
 
-        QMetaObject::invokeMethod(this, [=, this] {     
+        QMetaObject::invokeMethod(this, [=, this] {
             _mediaWidget->showMessage("Finished!");
             _controls_disabled = false;
             loadFiles();
             updateCurrentFileInfo();
+            if(_fileList.size() > _currentIndex)
+            {
+                _mediaWidget->setMedia(_fileList[_currentIndex].path);
+            }
         });
     });
     thread.detach();
@@ -282,7 +288,7 @@ void MainWindow::keyPressEvent(QKeyEvent* ev)
     const auto shift = ev->modifiers().testFlag(Qt::KeyboardModifier::ShiftModifier);
     const auto alt = ev->modifiers().testFlag(Qt::KeyboardModifier::AltModifier);
     const auto numpad = ev->modifiers().testFlag(Qt::KeyboardModifier::KeypadModifier);
-    
+
     if (ctrl && shift && !_fileList.empty())
     {
         if (ev->key() == Qt::Key_Plus)
