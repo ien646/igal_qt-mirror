@@ -6,6 +6,8 @@
 #include <QSlider>
 #include <QWidget>
 
+#include "ClickableSlider.hpp"
+
 class VideoControls : public QWidget
 {
     Q_OBJECT
@@ -42,9 +44,9 @@ private:
     QLabel* _seek_position_label = nullptr;
     QLabel* _play_label = nullptr;
     QLabel* _pause_label = nullptr;
-    QSlider* _seek_slider = nullptr;
+    ClickableSlider* _seek_slider = nullptr;
     QLabel* _volume_label = nullptr;
-    QSlider* _volume_slider = nullptr;
+    ClickableSlider* _volume_slider = nullptr;
     QComboBox* _audio_channel_combo = nullptr;
 
     void updateButtonStyles();

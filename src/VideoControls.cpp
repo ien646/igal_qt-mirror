@@ -17,8 +17,8 @@ VideoControls::VideoControls(QWidget* parent)
     this->setLayout(_main_layout);
 
     _seek_position_label = new QLabel(this);
-    _volume_slider = new QSlider(Qt::Orientation::Horizontal, this);
-    _seek_slider = new QSlider(Qt::Orientation::Horizontal, this);
+    _volume_slider = new ClickableSlider(Qt::Orientation::Horizontal, this);
+    _seek_slider = new ClickableSlider(Qt::Orientation::Horizontal, this);
     _play_label = new QLabel(this);
     _pause_label = new QLabel(this);
     _volume_label = new QLabel(this);
@@ -64,21 +64,21 @@ VideoControls::VideoControls(QWidget* parent)
     _main_layout->addWidget(_volume_slider);
     _main_layout->addSpacing(16);
 
-    connect(_volume_slider, &QSlider::valueChanged, this, [this](int percent) {
+    connect(_volume_slider, &ClickableSlider::valueChanged, this, [this](int percent) {
         emit volumeChanged(percent);
         _volume_label->setText(QString::fromStdString(std::format("Volume: {}%", percent)));
     });
     _volume_slider->setValue(50);
 
-    connect(_seek_slider, &QSlider::sliderMoved, this, [this](int pos) {
+    connect(_seek_slider, &ClickableSlider::sliderMoved, this, [this](int pos) {
         emit videoPositionChanged(static_cast<float>(pos) / _seek_slider->maximum());
         updateSeekLabel((static_cast<float>(pos) / _seek_slider->maximum()) * _current_video_duration);
     });
 
-    connect(_seek_slider, &QSlider::sliderPressed, this, [this] { emit seekSliderClicked(); });
-    connect(_seek_slider, &QSlider::sliderReleased, this, [this] { emit seekSliderReleased(); });
-    connect(_volume_slider, &QSlider::sliderPressed, this, [this] { emit volumeSliderClicked(); });
-    connect(_volume_slider, &QSlider::sliderReleased, this, [this] { emit volumeSliderReleased(); });
+    connect(_seek_slider, &ClickableSlider::sliderPressed, this, [this] { emit seekSliderClicked(); });
+    connect(_seek_slider, &ClickableSlider::sliderReleased, this, [this] { emit seekSliderReleased(); });
+    connect(_volume_slider, &ClickableSlider::sliderPressed, this, [this] { emit volumeSliderClicked(); });
+    connect(_volume_slider, &ClickableSlider::sliderReleased, this, [this] { emit volumeSliderReleased(); });
 
     connect(_audio_channel_combo, &QComboBox::currentIndexChanged, this, [this](int index) {
         emit audioChannelChanged(index);

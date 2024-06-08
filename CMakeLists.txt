@@ -27,6 +27,7 @@ qt_add_executable(${PROJECT_NAME}
     "src/main.cpp"
 
     "src/CachedMediaProxy.cpp"
+    "src/ClickableSlider.cpp"
     "src/HelpDialog.cpp"
     "src/InfoOverlayWidget.cpp"
     "src/ListSelectWidget.cpp"

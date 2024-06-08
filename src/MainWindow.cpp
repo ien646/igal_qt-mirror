@@ -169,7 +169,7 @@ void MainWindow::upscaleImage(const std::string& path, const std::string& model)
 {
     _controls_disabled = true;
 
-    std::thread thread([=, this] {
+    std::thread thread([path, model, this] {
         const std::string targetpath = std::format("{}/up2_{}", ien::get_file_directory(path), ien::get_file_name(path));
         const std::string command = "realesrgan-ncnn-vulkan";
         if (!ien::exists_in_envpath(command))
