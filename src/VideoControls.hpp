@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QComboBox>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QSlider>
@@ -21,6 +22,8 @@ public:
 
     void setCurrentVolume(int percent);
 
+    void setAudioChannelInfo(const std::map<int, std::string>& channelInfo);
+
 signals:
     void playClicked();
     void pauseClicked();
@@ -30,6 +33,7 @@ signals:
     void volumeSliderReleased();
     void videoPositionChanged(float pos);
     void volumeChanged(int percent);
+    void audioChannelChanged(int channelIndex);
 
 private:
     bool _clicking = false;
@@ -41,6 +45,7 @@ private:
     QSlider* _seek_slider = nullptr;
     QLabel* _volume_label = nullptr;
     QSlider* _volume_slider = nullptr;
+    QComboBox* _audio_channel_combo = nullptr;
 
     void updateButtonStyles();
     void updateSeekLabel(int64_t posMs);

@@ -22,6 +22,7 @@ VideoControls::VideoControls(QWidget* parent)
     _play_label = new QLabel(this);
     _pause_label = new QLabel(this);
     _volume_label = new QLabel(this);
+    _audio_channel_combo = new QComboBox(this);
 
     _seek_position_label->setFont(getTextFont());
     _seek_position_label->setStyleSheet("QLabel{color:#ffffff;}");
@@ -44,6 +45,12 @@ VideoControls::VideoControls(QWidget* parent)
         QPixmap::fromImage(QImage(":/icon_pause.png"))
             .scaled(16, 16, Qt::AspectRatioMode::KeepAspectRatio, Qt::TransformationMode::FastTransformation));
 
+    _audio_channel_combo->clear();
+    _audio_channel_combo->addItem("CH: 0", 0);
+    _audio_channel_combo->setFont(getTextFont());
+    _audio_channel_combo->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+    _audio_channel_combo->hide();
+
     _play_label->setMouseTracking(true);
     _pause_label->setMouseTracking(true);
 
@@ -59,7 +66,7 @@ VideoControls::VideoControls(QWidget* parent)
 
     connect(_volume_slider, &QSlider::valueChanged, this, [this](int percent) {
         emit volumeChanged(percent);
-        _volume_label->setText(QString::fromStdString(std::format("Volume: {}%", percent)));        
+        _volume_label->setText(QString::fromStdString(std::format("Volume: {}%", percent)));
     });
     _volume_slider->setValue(50);
 
@@ -72,6 +79,10 @@ VideoControls::VideoControls(QWidget* parent)
     connect(_seek_slider, &QSlider::sliderReleased, this, [this] { emit seekSliderReleased(); });
     connect(_volume_slider, &QSlider::sliderPressed, this, [this] { emit volumeSliderClicked(); });
     connect(_volume_slider, &QSlider::sliderReleased, this, [this] { emit volumeSliderReleased(); });
+
+    connect(_audio_channel_combo, &QComboBox::currentIndexChanged, this, [this](int index) {
+        emit audioChannelChanged(index);
+    });
 
     disableFocusOnChildWidgets(this);
 }
@@ -122,6 +133,29 @@ void VideoControls::setCurrentVideoPosition(int64_t posMs)
 void VideoControls::setCurrentVolume(int percent)
 {
     _volume_slider->setSliderPosition(percent);
+}
+
+void VideoControls::setAudioChannelInfo(const std::map<int, std::string>& channelInfo)
+{
+    if (channelInfo.empty())
+    {
+        return;
+    }
+
+    _audio_channel_combo->clear();
+    for (const auto& [channelIndex, name] : channelInfo)
+    {
+        _audio_channel_combo->addItem(QString::fromStdString(std::format("CH: {} ({})", channelIndex, name)), channelIndex);
+    }
+
+    if(channelInfo.size() > 1)
+    {
+        _audio_channel_combo->show();
+    }
+    else
+    {
+        _audio_channel_combo->hide();
+    }
 }
 
 void VideoControls::updateButtonStyles()

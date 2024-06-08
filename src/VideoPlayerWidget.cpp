@@ -2,6 +2,7 @@
 
 #include <ien/activity.hpp>
 
+#include <QMediaMetaData>
 #include <QResizeEvent>
 
 #include "Utils.hpp"
@@ -94,6 +95,10 @@ void VideoPlayerWidget::setupConnections()
         _audio_output->setVolume(static_cast<float>(volume) / 100);
     });
 
+    connect(_video_controls, &VideoControls::audioChannelChanged, this, [this](int index) {
+        _media_player->setActiveAudioTrack(index);
+    });
+
     connect(_media_player, &QMediaPlayer::positionChanged, _video_controls, [&](qint64 pos) {
         if (_media_player->isPlaying())
         {
@@ -112,6 +117,19 @@ void VideoPlayerWidget::setupConnections()
         {
             _video_controls->hide();
         }
+    });
+
+    connect(_media_player, &QMediaPlayer::tracksChanged, this, [this] {
+        std::map<int, std::string> channelInfo;
+        for (size_t i = 0; i < _media_player->audioTracks().size(); ++i)
+        {
+            auto track = _media_player->audioTracks().at(i);
+            const auto language = track[QMediaMetaData::Language].toString();
+            const auto trackNum = i;
+            channelInfo.emplace(trackNum, language.toStdString());
+        }
+
+        _video_controls->setAudioChannelInfo(channelInfo);
     });
 }
 
