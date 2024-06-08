@@ -10,4 +10,5 @@ public:
 
 private:
     void mousePressEvent(QMouseEvent* ev) override;
+    void paintEvent(QPaintEvent* ev) override;
 };
