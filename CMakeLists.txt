@@ -44,12 +44,11 @@ qt_add_executable(${PROJECT_NAME}
 target_compile_definitions(${PROJECT_NAME} PUBLIC "IGAL_QT_VERSION=\"${CMAKE_PROJECT_VERSION}\"")
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
-    CXX_STANDARD 23
+    CXX_STANDARD 20
     CXX_STANDARD_REQUIRED ON
     CXX_EXTENSIONS OFF
     AUTOMOC ON
     AUTORCC ON
-    AUTOUIC ON
 )
 
 target_link_libraries(${PROJECT_NAME} PUBLIC libien Qt6::Core Qt6::Widgets Qt6::Multimedia Qt6::MultimediaWidgets)
