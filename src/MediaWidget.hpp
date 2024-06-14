@@ -51,6 +51,8 @@ public:
     void translateDown(float amount);
     void resetTransform();
 
+    void increaseVideoSpeed(float amount);
+
 private:
     std::string _target;
     bool _isVideo;

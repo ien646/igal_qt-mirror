@@ -206,7 +206,7 @@ void MainWindow::upscaleImage(const std::string& path, const std::string& model)
             _controls_disabled = false;
             loadFiles();
             updateCurrentFileInfo();
-            if(_fileList.size() > _currentIndex)
+            if (_fileList.size() > _currentIndex)
             {
                 _mediaWidget->setMedia(_fileList[_currentIndex].path);
             }
@@ -323,6 +323,17 @@ void MainWindow::keyPressEvent(QKeyEvent* ev)
         _navigateSelectWidget->show();
         _navigateSelectWidget->setFocus(Qt::FocusReason::MouseFocusReason);
         _mediaLayout->setCurrentWidget(_navigateSelectWidget);
+    }
+    else if (shift)
+    {
+        if (ev->key() == Qt::Key_Up)
+        {
+            _mediaWidget->increaseVideoSpeed(0.05f);
+        }
+        if (ev->key() == Qt::Key_Down)
+        {
+            _mediaWidget->increaseVideoSpeed(-0.05f);
+        }
     }
     else if (numpad)
     {

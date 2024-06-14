@@ -25,7 +25,9 @@ const std::vector<std::string> CONTROLS_LINES = {
     "<b>Num[0]</b>: Reset transform (image/animation)",
     "<b>Ctrl+Shift+Num[+]</b>: Open upscale dialog",
     "<b>Ctrl+Shift+{Key}</b>: Copy to link directory",
-    "<b>Shift+Return</b>: Open linked directory navigator"
+    "<b>Shift+Return</b>: Open linked directory navigator",
+    "<b>Shift+Up</b>: Change video/animation speed (+5%)",
+    "<b>Shift+Down</b>: Change video/animation speed (-5%)"
 };
 
 HelpDialog::HelpDialog(QWidget* parent)

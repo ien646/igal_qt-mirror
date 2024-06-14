@@ -134,13 +134,13 @@ void MediaWidget::toggleMute()
 
 void MediaWidget::togglePlayPauseVideo()
 {
-    if(_currentMedia == CurrentMediaType::Video)
+    if (_currentMedia == CurrentMediaType::Video)
     {
-        if(_videoPlayer->mediaPlayer()->isPlaying())
+        if (_videoPlayer->mediaPlayer()->isPlaying())
         {
             _videoPlayer->mediaPlayer()->pause();
         }
-        else 
+        else
         {
             _videoPlayer->mediaPlayer()->play();
         }
@@ -237,11 +237,11 @@ void MediaWidget::syncAnimationSize()
 
 void MediaWidget::updateTransform()
 {
-    if(!_image)
+    if (!_image)
     {
         return;
     }
-    
+
     _currentTranslation.setX(std::clamp(_currentTranslation.x(), -1.0, 1.0));
     _currentTranslation.setY(std::clamp(_currentTranslation.y(), -1.0, 1.0));
 
@@ -273,6 +273,22 @@ void MediaWidget::resetTransform()
     _currentZoom = 1.0f;
     _currentTranslation = { 0.0f, 0.0f };
     updateTransform();
+}
+
+void MediaWidget::increaseVideoSpeed(float amount)
+{
+    if(_currentMedia == CurrentMediaType::Video)
+    {
+        const auto rate = std::max(0.0, _videoPlayer->mediaPlayer()->playbackRate() + amount);
+        _videoPlayer->mediaPlayer()->setPlaybackRate(rate);
+        showMessage("x" + QString::number(rate, 10, 2));
+    }
+    else if (_currentMedia == CurrentMediaType::Animation)
+    {
+        const auto rate = std::max(0.0f, _animation->speed() + (100.0f * amount));
+        _animation->setSpeed(rate);
+        showMessage("x" + QString::number(rate / 100.f, 10, 2));
+    }
 }
 
 void MediaWidget::connectAnimationSignals()
