@@ -3,6 +3,8 @@
 #include <QLabel>
 #include <QMouseEvent>
 
+#include <ien/activity.hpp>
+
 #include "Utils.hpp"
 
 VideoControls::VideoControls(QWidget* parent)
@@ -35,7 +37,7 @@ VideoControls::VideoControls(QWidget* parent)
     _volume_slider->setMinimum(0);
     _volume_slider->setMaximum(100);
     _volume_slider->setMaximumWidth(100);
-    _volume_label->setText("Volume: 100%");
+    _volume_label->setText("Volume: 50%");
 
     _play_label->setPixmap(
         QPixmap::fromImage(QImage(":/icon_play.png"))
@@ -64,15 +66,18 @@ VideoControls::VideoControls(QWidget* parent)
     _main_layout->addWidget(_volume_slider);
     _main_layout->addSpacing(16);
 
-    connect(_volume_slider, &ClickableSlider::valueChanged, this, [this](int percent) {
-        emit volumeChanged(percent);
-        _volume_label->setText(QString::fromStdString(std::format("Volume: {}%", percent)));
+    connect(_volume_slider, &ClickableSlider::sliderMoved, this, [this](int pos) {
+        const auto position = static_cast<float>(pos) / _volume_slider->maximum();
+        emit volumeChanged(position * 100);
+        _volume_label->setText(QString::fromStdString(std::format("Volume: {}%", static_cast<int>(position * 100))));
+        emit volumeSliderMoved();
     });
     _volume_slider->setValue(50);
 
     connect(_seek_slider, &ClickableSlider::sliderMoved, this, [this](int pos) {
         emit videoPositionChanged(static_cast<float>(pos) / _seek_slider->maximum());
         updateSeekLabel((static_cast<float>(pos) / _seek_slider->maximum()) * _current_video_duration);
+        emit seekSliderMoved();
     });
 
     connect(_seek_slider, &ClickableSlider::sliderPressed, this, [this] { emit seekSliderClicked(); });
@@ -145,10 +150,11 @@ void VideoControls::setAudioChannelInfo(const std::map<int, std::string>& channe
     _audio_channel_combo->clear();
     for (const auto& [channelIndex, name] : channelInfo)
     {
-        _audio_channel_combo->addItem(QString::fromStdString(std::format("CH: {} ({})", channelIndex, name)), channelIndex);
+        _audio_channel_combo
+            ->addItem(QString::fromStdString(std::format("CH: {} ({})", channelIndex, name)), channelIndex);
     }
 
-    if(channelInfo.size() > 1)
+    if (channelInfo.size() > 1)
     {
         _audio_channel_combo->show();
     }
@@ -170,22 +176,19 @@ void VideoControls::updateButtonStyles()
         "QLabel{ padding: 2px; border-radius: 2px; background-color: "
         "rgba(255,255,100,150); }";
 
-    if (_pause_label->underMouse())
-    {
-        _pause_label->setStyleSheet(_clicking ? active_stylesheet : hover_stylesheet);
-    }
-    else
-    {
-        _pause_label->setStyleSheet(standard_stylesheet);
-    }
+    const auto
+        pause_stylesheet = _pause_label->underMouse() ? (_clicking ? active_stylesheet : hover_stylesheet) : standard_stylesheet;
 
-    if (_play_label->underMouse())
+    const auto
+        play_stylesheet = _play_label->underMouse() ? (_clicking ? active_stylesheet : hover_stylesheet) : standard_stylesheet;
+
+    if(_pause_label->styleSheet() != pause_stylesheet)
     {
-        _play_label->setStyleSheet(_clicking ? active_stylesheet : hover_stylesheet);
+        _pause_label->setStyleSheet(pause_stylesheet);
     }
-    else
+    if(_play_label->styleSheet() != play_stylesheet)
     {
-        _play_label->setStyleSheet(standard_stylesheet);
+        _play_label->setStyleSheet(play_stylesheet);
     }
 }
 

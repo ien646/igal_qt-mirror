@@ -30,8 +30,10 @@ signals:
     void playClicked();
     void pauseClicked();
     void seekSliderClicked();
+    void seekSliderMoved();
     void seekSliderReleased();
     void volumeSliderClicked();
+    void volumeSliderMoved();
     void volumeSliderReleased();
     void videoPositionChanged(float pos);
     void volumeChanged(int percent);

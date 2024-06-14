@@ -72,6 +72,10 @@ void VideoPlayerWidget::setupConnections()
         _timer->stop();
     });
 
+    connect(_video_controls, &VideoControls::seekSliderMoved, this, [this] {
+        _timer->stop();
+    });
+
     connect(_video_controls, &VideoControls::seekSliderReleased, this, [this] {
         _clicked = false;
         if (_was_playing_before_seek_click)
@@ -84,6 +88,10 @@ void VideoPlayerWidget::setupConnections()
     connect(_video_controls, &VideoControls::volumeSliderClicked, this, [this] {
         _timer->stop();
         _clicked = true;
+    });
+
+    connect(_video_controls, &VideoControls::volumeSliderMoved, this, [this] {
+        _timer->stop();
     });
 
     connect(_video_controls, &VideoControls::volumeSliderReleased, this, [this] {
@@ -104,7 +112,6 @@ void VideoPlayerWidget::setupConnections()
         {
             _video_controls->setCurrentVideoDuration(_media_player->duration());
             _video_controls->setCurrentVideoPosition(pos);
-            ien::simulate_user_activity();
         }
     });
 
