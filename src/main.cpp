@@ -3,6 +3,7 @@
 #include <QMessageBox>
 
 #include <ien/fs_utils.hpp>
+#include <ien/platform.hpp>
 
 #include <iostream>
 
@@ -14,9 +15,18 @@ constexpr const char* APP_VERSION = IGAL_QT_VERSION;
 constexpr const char* APP_VERSION = "0.0.0";
 #endif
 
+#ifdef IEN_OS_WIN
+    #include <ien/win32/windows.h>
+#endif
+
 int main(int argc, char** argv)
 {
+#ifdef IEN_OS_WIN
+    const std::vector<std::wstring> wargs = ien::get_cmdline_wargs();
+    const std::string path = wargs.size() > 1 ? ien::wstr_to_str(wargs[1]) : ien::get_current_user_homedir();
+#else
     const std::string path = argc > 1 ? argv[1] : ien::get_current_user_homedir();
+#endif
     if (path == "--version")
     {
         std::cout << "Version: " << APP_VERSION << std::endl;
@@ -35,6 +45,7 @@ int main(int argc, char** argv)
 
         MainWindow window(path);
         window.setWindowIcon(icon);
+        
 #ifdef IGAL_QT_VERSION
         window.setWindowTitle(QString::fromStdString(std::format("IGAL-QT <{}>", IGAL_QT_VERSION)));
 #else
