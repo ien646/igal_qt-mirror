@@ -147,7 +147,6 @@ void MainWindow::processCopyToLinkKey(QKeyEvent* ev)
 
 void MainWindow::preCacheSurroundings()
 {
-    // Precache surroundings
     constexpr int SURROUNDING_PRECACHE_WINDOW = 3;
     for (int i = 1; i <= SURROUNDING_PRECACHE_WINDOW; ++i)
     {
