@@ -25,7 +25,7 @@ VideoPlayerWidget::VideoPlayerWidget(QWidget* parent)
     _media_player = new QMediaPlayer(this);
     _audio_output = new QAudioOutput(this);
     _scene = new QGraphicsScene(this);
-    _timer = new QTimer(this);
+    _autoHideTimer = new QTimer(this);
 
     this->setScene(_scene);
     this->setLayout(_main_layout);
@@ -47,9 +47,9 @@ VideoPlayerWidget::VideoPlayerWidget(QWidget* parent)
     _media_player->setLoops(QMediaPlayer::Infinite);
     _media_player->setAudioOutput(_audio_output);
 
-    _timer->setSingleShot(true);
-    _timer->setInterval(2500);
-    _timer->start();
+    _autoHideTimer->setSingleShot(true);
+    _autoHideTimer->setInterval(2500);
+    _autoHideTimer->start();
 
     setupConnections();
     disableFocusOnChildWidgets(this);
@@ -57,9 +57,15 @@ VideoPlayerWidget::VideoPlayerWidget(QWidget* parent)
 
 void VideoPlayerWidget::setupConnections()
 {
-    connect(_video_controls, &VideoControls::playClicked, this, [this] { _media_player->play(); });
+    connect(_video_controls, &VideoControls::playClicked, this, [this] { 
+        _media_player->play(); 
+        _autoHideTimer->start();
+    });
 
-    connect(_video_controls, &VideoControls::pauseClicked, this, [this] { _media_player->pause(); });
+    connect(_video_controls, &VideoControls::pauseClicked, this, [this] { 
+        _media_player->pause(); 
+        _autoHideTimer->stop();
+    });
 
     connect(_video_controls, &VideoControls::videoPositionChanged, this, [this](float pos) {
         _media_player->setPosition(static_cast<float>(_media_player->duration()) * pos);
@@ -69,11 +75,11 @@ void VideoPlayerWidget::setupConnections()
         _clicked = true;
         _was_playing_before_seek_click = _media_player->isPlaying();
         _media_player->pause();
-        _timer->stop();
+        _autoHideTimer->stop();
     });
 
     connect(_video_controls, &VideoControls::seekSliderMoved, this, [this] {
-        _timer->stop();
+        _autoHideTimer->stop();
     });
 
     connect(_video_controls, &VideoControls::seekSliderReleased, this, [this] {
@@ -82,20 +88,20 @@ void VideoPlayerWidget::setupConnections()
         {
             _media_player->play();
         }
-        _timer->start();
+        _autoHideTimer->start();
     });
 
     connect(_video_controls, &VideoControls::volumeSliderClicked, this, [this] {
-        _timer->stop();
+        _autoHideTimer->stop();
         _clicked = true;
     });
 
     connect(_video_controls, &VideoControls::volumeSliderMoved, this, [this] {
-        _timer->stop();
+        _autoHideTimer->stop();
     });
 
     connect(_video_controls, &VideoControls::volumeSliderReleased, this, [this] {
-        _timer->start();
+        _autoHideTimer->start();
         _clicked = false;
     });
 
@@ -119,7 +125,7 @@ void VideoPlayerWidget::setupConnections()
         _video_controls->setCurrentVolume(volume * 100);
     });
 
-    connect(_timer, &QTimer::timeout, this, [this] {
+    connect(_autoHideTimer, &QTimer::timeout, this, [this] {
         if (_media_player->isPlaying())
         {
             _video_controls->hide();
@@ -145,7 +151,7 @@ void VideoPlayerWidget::setMedia(const std::string& src)
     _media_player->setSource(QString::fromStdString(src));
     _media_player->play();
     _video_controls->setCurrentVideoDuration(_media_player->duration());
-    _timer->start();
+    _autoHideTimer->start();
 }
 
 void VideoPlayerWidget::paintEvent(QPaintEvent* ev)
@@ -170,20 +176,20 @@ void VideoPlayerWidget::mouseMoveEvent(QMouseEvent* ev)
     _video_controls->show();
     if (!_clicked)
     {
-        _timer->start();
+        _autoHideTimer->start();
     }
 }
 
 void VideoPlayerWidget::mousePressEvent(QMouseEvent* ev)
 {
     _video_controls->show();
-    _timer->start();
+    _autoHideTimer->start();
 }
 
 void VideoPlayerWidget::mouseReleaseEvent(QMouseEvent* ev)
 {
     _video_controls->show();
-    _timer->start();
+    _autoHideTimer->start();
 }
 
 QMediaPlayer* VideoPlayerWidget::mediaPlayer()

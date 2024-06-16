@@ -42,7 +42,7 @@ private:
     QMediaPlayer* _media_player = nullptr;
     QAudioOutput* _audio_output = nullptr;
 
-    QTimer* _timer = nullptr;
+    QTimer* _autoHideTimer = nullptr;
     bool _clicked = false;
     bool _was_playing_before_seek_click = false;
 

@@ -67,6 +67,7 @@ VideoControls::VideoControls(QWidget* parent)
     _main_layout->addSpacing(16);
 
     connect(_volume_slider, &ClickableSlider::sliderMoved, this, [this](int pos) {
+        pos = std::max(pos, 0);
         const auto position = static_cast<float>(pos) / _volume_slider->maximum();
         emit volumeChanged(position * 100);
         _volume_label->setText(QString::fromStdString(std::format("Volume: {}%", static_cast<int>(position * 100))));
@@ -75,6 +76,7 @@ VideoControls::VideoControls(QWidget* parent)
     _volume_slider->setValue(50);
 
     connect(_seek_slider, &ClickableSlider::sliderMoved, this, [this](int pos) {
+        pos = std::max(pos, 0);
         emit videoPositionChanged(static_cast<float>(pos) / _seek_slider->maximum());
         updateSeekLabel((static_cast<float>(pos) / _seek_slider->maximum()) * _current_video_duration);
         emit seekSliderMoved();
