@@ -57,4 +57,7 @@ private:
     void navigateDir(const std::string& path);
     void deleteFile(const std::string& path);
     void openDir();
+    void openNavigationDialog();
+    void handleNumpadInput(int key);
+    void handleStandardInput(int key);
 };

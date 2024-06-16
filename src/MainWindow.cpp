@@ -277,6 +277,113 @@ void MainWindow::openDir()
     }
 }
 
+void MainWindow::openNavigationDialog()
+{
+    std::vector<std::string> items;
+    for (const auto& [key, dir] : _links)
+    {
+        const auto linkDir = _targetDir + "/" + dir;
+        if (std::filesystem::exists(linkDir))
+        {
+            items.push_back(ien::str_split(linkDir, "/").back());
+        }
+    }
+    if (items.empty())
+    {
+        items.push_back("..");
+    }
+
+    std::sort(items.begin(), items.end());
+    _navigateSelectWidget->setItems(items);
+    _navigateSelectWidget->show();
+    _navigateSelectWidget->setFocus(Qt::FocusReason::MouseFocusReason);
+    _mediaLayout->setCurrentWidget(_navigateSelectWidget);
+}
+
+void MainWindow::handleNumpadInput(int key)
+{
+    switch (key)
+    {
+    case Qt::Key_4:
+        _mediaWidget->translateLeft(0.2f);
+        break;
+    case Qt::Key_6:
+        _mediaWidget->translateRight(0.2f);
+        break;
+    case Qt::Key_2:
+        _mediaWidget->translateUp(0.2f);
+        break;
+    case Qt::Key_8:
+        _mediaWidget->translateDown(0.2f);
+        break;
+    case Qt::Key_Plus:
+        _mediaWidget->zoomIn(0.25f);
+        break;
+    case Qt::Key_Minus:
+        _mediaWidget->zoomOut(0.25f);
+        break;
+    case Qt::Key_0:
+        _mediaWidget->resetTransform();
+        break;
+    }
+}
+
+void MainWindow::handleStandardInput(int key)
+{
+    switch (key)
+    {
+    case Qt::Key_Left:
+        prevEntry();
+        break;
+    case Qt::Key_Right:
+        nextEntry();
+        break;
+    case Qt::Key_PageUp:
+        _mediaWidget->cachedMediaProxy().notifyBigJump();
+        prevEntry(10);
+        break;
+    case Qt::Key_PageDown:
+        _mediaWidget->cachedMediaProxy().notifyBigJump();
+        nextEntry(10);
+        break;
+    case Qt::Key_Home:
+        _mediaWidget->cachedMediaProxy().notifyBigJump();
+        firstEntry();
+        break;
+    case Qt::Key_End:
+        _mediaWidget->cachedMediaProxy().notifyBigJump();
+        lastEntry();
+        break;
+    case Qt::Key_R:
+        _mediaWidget->cachedMediaProxy().notifyBigJump();
+        randomEntry();
+        break;
+    case Qt::Key_F:
+        toggleFullScreen();
+        break;
+    case Qt::Key_I:
+        toggleCurrentFileInfo();
+        break;
+    case Qt::Key_M:
+        _mediaWidget->toggleMute();
+        break;
+    case Qt::Key_Delete:
+        deleteFile(_fileList[_currentIndex].path);
+        break;
+    case Qt::Key_O:
+        openDir();
+        break;
+    case Qt::Key_Space:
+        _mediaWidget->togglePlayPauseVideo();
+        break;
+    case Qt::Key_H:
+        HelpDialog* helpDiag = new HelpDialog(this);
+        helpDiag->show();
+        helpDiag->setFixedSize(helpDiag->size());
+        break;
+    }
+}
+
 void MainWindow::keyPressEvent(QKeyEvent* ev)
 {
     if (_controls_disabled)
@@ -288,10 +395,11 @@ void MainWindow::keyPressEvent(QKeyEvent* ev)
     const auto shift = ev->modifiers().testFlag(Qt::KeyboardModifier::ShiftModifier);
     const auto alt = ev->modifiers().testFlag(Qt::KeyboardModifier::AltModifier);
     const auto numpad = ev->modifiers().testFlag(Qt::KeyboardModifier::KeypadModifier);
+    const int key = ev->key();
 
     if (ctrl && shift && !_fileList.empty())
     {
-        if (ev->key() == Qt::Key_Plus)
+        if (key == Qt::Key_Plus)
         {
             _upscaleSelectWidget->show();
             _upscaleSelectWidget->setFocus(Qt::FocusReason::MouseFocusReason);
@@ -302,120 +410,28 @@ void MainWindow::keyPressEvent(QKeyEvent* ev)
             processCopyToLinkKey(ev);
         }
     }
-    else if (shift && ev->key() == Qt::Key_Return)
+    else if (shift && key == Qt::Key_Return)
     {
-        std::vector<std::string> items;
-        for (const auto& [key, dir] : _links)
-        {
-            const auto linkDir = _targetDir + "/" + dir;
-            if (std::filesystem::exists(linkDir))
-            {
-                items.push_back(ien::str_split(linkDir, "/").back());
-            }
-        }
-        if (items.empty())
-        {
-            items.push_back("..");
-        }
-
-        std::sort(items.begin(), items.end());
-        _navigateSelectWidget->setItems(items);
-        _navigateSelectWidget->show();
-        _navigateSelectWidget->setFocus(Qt::FocusReason::MouseFocusReason);
-        _mediaLayout->setCurrentWidget(_navigateSelectWidget);
+        openNavigationDialog();
     }
     else if (shift)
     {
-        if (ev->key() == Qt::Key_Up)
+        if (key == Qt::Key_Up)
         {
             _mediaWidget->increaseVideoSpeed(0.05f);
         }
-        if (ev->key() == Qt::Key_Down)
+        if (key == Qt::Key_Down)
         {
             _mediaWidget->increaseVideoSpeed(-0.05f);
         }
     }
     else if (numpad)
     {
-        switch (ev->key())
-        {
-        case Qt::Key_4:
-            _mediaWidget->translateLeft(0.2f);
-            break;
-        case Qt::Key_6:
-            _mediaWidget->translateRight(0.2f);
-            break;
-        case Qt::Key_2:
-            _mediaWidget->translateUp(0.2f);
-            break;
-        case Qt::Key_8:
-            _mediaWidget->translateDown(0.2f);
-            break;
-        case Qt::Key_Plus:
-            _mediaWidget->zoomIn(0.25f);
-            break;
-        case Qt::Key_Minus:
-            _mediaWidget->zoomOut(0.25f);
-            break;
-        case Qt::Key_0:
-            _mediaWidget->resetTransform();
-            break;
-        }
+        handleNumpadInput(key);
     }
     else
     {
-        switch (ev->key())
-        {
-        case Qt::Key_Left:
-            prevEntry();
-            break;
-        case Qt::Key_Right:
-            nextEntry();
-            break;
-        case Qt::Key_PageUp:
-            _mediaWidget->cachedMediaProxy().notifyBigJump();
-            prevEntry(10);
-            break;
-        case Qt::Key_PageDown:
-            _mediaWidget->cachedMediaProxy().notifyBigJump();
-            nextEntry(10);
-            break;
-        case Qt::Key_Home:
-            _mediaWidget->cachedMediaProxy().notifyBigJump();
-            firstEntry();
-            break;
-        case Qt::Key_End:
-            _mediaWidget->cachedMediaProxy().notifyBigJump();
-            lastEntry();
-            break;
-        case Qt::Key_R:
-            _mediaWidget->cachedMediaProxy().notifyBigJump();
-            randomEntry();
-            break;
-        case Qt::Key_F:
-            toggleFullScreen();
-            break;
-        case Qt::Key_I:
-            toggleCurrentFileInfo();
-            break;
-        case Qt::Key_M:
-            _mediaWidget->toggleMute();
-            break;
-        case Qt::Key_Delete:
-            deleteFile(_fileList[_currentIndex].path);
-            break;
-        case Qt::Key_O:
-            openDir();
-            break;
-        case Qt::Key_Space:
-            _mediaWidget->togglePlayPauseVideo();
-            break;
-        case Qt::Key_H:
-            HelpDialog* helpDiag = new HelpDialog(this);
-            helpDiag->show();
-            helpDiag->setFixedSize(helpDiag->size());
-            break;
-        }
+        handleStandardInput(key);
     }
 }
 
