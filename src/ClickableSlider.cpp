@@ -7,8 +7,7 @@
 void ClickableSlider::mousePressEvent(QMouseEvent* ev)
 {
     const auto mousePos = ev->pos().x();
-    const float sliderPos = ien::remap<
-        float>(mousePos, 0.0f, width() - contentsMargins().left() - contentsMargins().right(), 0.0f, 1.0f);
+    const float sliderPos = ien::remap(mousePos, 0.0f, width() - contentsMargins().left() - contentsMargins().right(), 0.0f, 1.0f);
     emit sliderPressed();
     emit sliderMoved(sliderPos * maximum());
     setValue(sliderPos * maximum());
@@ -20,8 +19,7 @@ void ClickableSlider::mouseMoveEvent(QMouseEvent* ev)
     if (_moving)
     {
         const auto mousePos = ev->pos().x();
-        const float sliderPos = ien::remap<
-            float>(mousePos, 0.0f, width() - contentsMargins().left() - contentsMargins().right(), 0.0f, 1.0f);
+        const float sliderPos = ien::remap(mousePos, 0.0f, width() - contentsMargins().left() - contentsMargins().right(), 0.0f, 1.0f);
         emit sliderMoved(sliderPos * maximum());
         setValue(sliderPos * maximum());
     }
@@ -40,13 +38,13 @@ void ClickableSlider::paintEvent(QPaintEvent* ev)
         seekPos = ien::remap(value(), 0, maximum(), 0, width() - contentsMargins().left() - contentsMargins().right());
 
     // Background
-    painter.setBrush(QBrush("#4466CA", Qt::FDiagPattern));
+    painter.setBrush(QBrush("#4466CA"));
     painter.setPen(Qt::transparent);
     painter.drawRect(this->rect());
 
     // Filled segment
     const QRect filledRect(0, 0, seekPos, height());
-    painter.setBrush(QBrush("#44CA66"));
+    painter.setBrush(QBrush("#CACA69"));
     painter.drawRect(filledRect);
 
     // Seek bar
