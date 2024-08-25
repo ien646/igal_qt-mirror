@@ -202,5 +202,5 @@ void VideoControls::updateSeekLabel(int64_t posMs)
     const auto h = std::chrono::duration_cast<std::chrono::hours>(ms);
 
     _seek_position_label->setText(QString::fromStdString(
-        std::format("{:0<2}:{:0<2}:{:0<2}:{:0<2}", h.count() % 100, m.count() % 60, s.count() % 60, (ms.count() % 1000) / 10)));
+        std::format("{:0>2}:{:0>2}:{:0>2}:{:0>2}", h.count() % 100, m.count() % 60, s.count() % 60, (ms.count() % 1000) / 10)));
 }
