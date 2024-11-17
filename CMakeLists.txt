@@ -81,7 +81,7 @@ if(LINUX)
     )
 endif()
 
-if(WIN32)
+if(WIN32 AND NOT MINGW)
     find_program(WINDEPLOYQT NAMES windeployqt.exe HINTS ${CMAKE_PREFIX_PATH} REQUIRED)
     add_custom_command(
         TARGET ${PROJECT_NAME}

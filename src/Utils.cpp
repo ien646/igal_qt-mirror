@@ -24,7 +24,7 @@ constexpr const char* APNG_ACTL_STR = "acTL";
 constexpr const char* WEBP_ANIM_STR = "ANIM";
 constexpr const char* WEBP_ANMF_STR = "ANMF";
 
-bool isPngAnimated(std::span<const uint8_t> data)
+bool isPngAnimated(std::span<const std::byte> data)
 {
     if (data.empty())
     {
@@ -41,7 +41,7 @@ bool isPngAnimated(std::span<const uint8_t> data)
     return sv.substr(0, idat_pos).find(APNG_ACTL_STR) != std::string_view::npos;
 }
 
-bool isWebpAnimated(std::span<const uint8_t> data)
+bool isWebpAnimated(std::span<const std::byte> data)
 {
     const std::string_view sv(reinterpret_cast<const char*>(data.data()), data.size());
     return sv.find(WEBP_ANIM_STR) != std::string_view::npos && sv.find(WEBP_ANMF_STR) != std::string_view::npos;
