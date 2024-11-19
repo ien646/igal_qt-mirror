@@ -25,7 +25,7 @@ MainWindow::MainWindow(const std::string& target_path)
     _mediaLayout = new QStackedLayout(this);
     _mediaWidget = new MediaWidget(this);
     _upscaleSelectWidget = new ListSelectWidget(getUpscaleModels(), this);
-    _navigateSelectWidget = new ListSelectWidget({}, this);
+    _navigateSelectWidget = new ListSelectWidget({}, this, true);
 
     setCentralWidget(_mainWidget);
     _mainWidget->setStyleSheet("QWidget{background-color:#000000;}");
@@ -91,15 +91,15 @@ MainWindow::MainWindow(const std::string& target_path)
 
     connect(this, &MainWindow::currentIndexChanged, this, [this] { updateCurrentFileInfo(); });
 
-    connect(_upscaleSelectWidget, &ListSelectWidget::itemSelected, this, [this](const std::string& selected) {
-        upscaleImage(_fileList[_currentIndex].path, selected);
+    connect(_upscaleSelectWidget, &ListSelectWidget::itemsSelected, this, [this](const auto& selected) {
+        upscaleImage(_fileList[_currentIndex].path, selected[0]);
         _upscaleSelectWidget->hide();
     });
 
     connect(_upscaleSelectWidget, &ListSelectWidget::cancelled, this, [this] { _upscaleSelectWidget->hide(); });
 
-    connect(_navigateSelectWidget, &ListSelectWidget::itemSelected, this, [this](const std::string& selected) {
-        const auto newDir = _targetDir + "/" + selected;
+    connect(_navigateSelectWidget, &ListSelectWidget::itemsSelected, this, [this](const auto& selected) {
+        const auto newDir = _targetDir + "/" + selected[0];
         if (std::filesystem::exists(newDir))
         {
             navigateDir(newDir);
