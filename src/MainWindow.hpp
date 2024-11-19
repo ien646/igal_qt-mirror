@@ -13,6 +13,11 @@ struct FileEntry
 {
     std::string path;
     time_t mtime;
+
+    bool operator==(const FileEntry& rhs) const
+    {
+        return path == rhs.path && mtime && rhs.mtime;
+    }
 };
 
 class MainWindow : public QMainWindow
@@ -40,8 +45,10 @@ private:
     bool _controls_disabled = false;
     float _currentZoom = 1.0f;
     QPointF _currentTranslation = { 0.0f, 0.0f };
+    bool _multiMode = false;
 
     void loadFiles();
+    void loadFilesMulti(const std::vector<std::string>& abs_directories);
     void nextEntry(int times = 1);
     void prevEntry(int times = 1);
     void firstEntry();

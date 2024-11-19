@@ -107,10 +107,12 @@ void ListSelectWidget::keyPressEvent(QKeyEvent* ev)
         auto selectedItems = _selectedIndices | std::views::transform([this](size_t i) { return _items[i]; });        
         emit itemsSelected({ selectedItems.begin(), selectedItems.end() });
         _currentIndex = 0;
+        _selectedIndices.clear();
     }
     else if (ev->key() == Qt::Key_Escape)
     {
         _currentIndex = 0;
+        _selectedIndices.clear();
         emit cancelled();
     }
 

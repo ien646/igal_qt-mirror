@@ -12,6 +12,8 @@
 
 #include <algorithm>
 #include <filesystem>
+#include <ranges>
+#include <unordered_set>
 
 #include "HelpDialog.hpp"
 #include "Utils.hpp"
@@ -98,17 +100,44 @@ MainWindow::MainWindow(const std::string& target_path)
 
     connect(_upscaleSelectWidget, &ListSelectWidget::cancelled, this, [this] { _upscaleSelectWidget->hide(); });
 
-    connect(_navigateSelectWidget, &ListSelectWidget::itemsSelected, this, [this](const auto& selected) {
-        const auto newDir = _targetDir + "/" + selected[0];
-        if (std::filesystem::exists(newDir))
+    connect(_navigateSelectWidget, &ListSelectWidget::itemsSelected, this, [this](const std::vector<std::string>& selected) {
+        if (selected.empty())
         {
-            navigateDir(newDir);
+            return;
+        }
+        else if (selected.size() == 1)
+        {
+            const auto newDir = _targetDir + "/" + selected[0];
+            if (std::filesystem::exists(newDir))
+            {
+                navigateDir(newDir);
+            }
+            else
+            {
+                _mediaWidget->showMessage(QString::fromStdString("Target dir not found: " + newDir));
+            }
+            _navigateSelectWidget->hide();
         }
         else
         {
-            _mediaWidget->showMessage(QString::fromStdString("Target dir not found: " + newDir));
+            std::vector<std::string> abs_paths;
+            for (const auto& item : selected)
+            {
+                const auto path = _targetDir + "/" + item;
+                if (std::filesystem::exists(path))
+                {
+                    abs_paths.push_back(path);
+                }
+            }
+
+            loadFilesMulti(abs_paths);
+
+            _currentIndex = 0;
+            _mediaWidget->cachedMediaProxy().clear();
+            _mediaWidget->setMedia(_fileList[_currentIndex].path);
+
+            _navigateSelectWidget->hide();
         }
-        _navigateSelectWidget->hide();
     });
 
     connect(_navigateSelectWidget, &ListSelectWidget::cancelled, this, [this] { _navigateSelectWidget->hide(); });
@@ -400,6 +429,12 @@ void MainWindow::keyPressEvent(QKeyEvent* ev)
     {
         if (key == Qt::Key_Plus)
         {
+            if (_multiMode)
+            {
+                _mediaWidget->showMessage("Upscaling not available in multi-mode");
+                return;
+            }
+
             _upscaleSelectWidget->show();
             _upscaleSelectWidget->setFocus(Qt::FocusReason::MouseFocusReason);
             _mediaLayout->setCurrentWidget(_upscaleSelectWidget);
@@ -451,6 +486,66 @@ void MainWindow::loadFiles()
     std::sort(_fileList.begin(), _fileList.end(), [](const FileEntry& lhs, const FileEntry& rhs) {
         return lhs.mtime > rhs.mtime;
     });
+
+    _multiMode = false;
+}
+
+void MainWindow::loadFilesMulti(const std::vector<std::string>& abs_directories)
+{
+    _mediaWidget->cachedMediaProxy().clear();
+    _fileList.clear();
+
+    const auto listToMap = [](const std::vector<FileEntry>& list) {
+        std::unordered_map<std::string, FileEntry> result;
+        for (const auto& item : list)
+        {
+            result.emplace(ien::get_file_name(item.path), item);
+        }
+        return result;
+    };
+
+    std::vector<std::vector<FileEntry>> dir_entry_lists;
+    for (const auto& dir : abs_directories)
+    {
+        std::vector<FileEntry>& current_list = dir_entry_lists.emplace_back();
+        for (const auto& entry :
+             std::filesystem::directory_iterator(dir) | std::views::filter([](const auto& e) {
+                 return e.is_regular_file() && hasMediaExtension(e.path().string());
+             }))
+        {
+            const auto path = entry.path().string();
+            const auto mtime = ien::get_file_mtime(path);
+            current_list.push_back(FileEntry{ .path = path, .mtime = mtime });
+        }
+    }
+
+    for (size_t i = 0; i < dir_entry_lists.size() - 1; ++i)
+    {
+        const std::unordered_map<std::string, FileEntry> current_list = listToMap(dir_entry_lists[i]);
+
+        for (size_t j = i + 1; j < dir_entry_lists.size(); ++j)
+        {
+            const auto& other_list = listToMap(dir_entry_lists[j]);
+            for (const auto& [current_name, current_entry] : current_list)
+            {
+                if (std::find_if(other_list.begin(), other_list.end(), [&](const auto& pair) {
+                        return current_name == pair.first;
+                    }) != other_list.end())
+                {
+                    _fileList.push_back(current_entry);
+                }
+            }
+        }
+    }
+
+    std::sort(_fileList.begin(), _fileList.end(), [](const FileEntry& lhs, const FileEntry& rhs) {
+        return lhs.mtime > rhs.mtime;
+    });
+
+    _fileList.erase(std::unique(_fileList.begin(), _fileList.end()), _fileList.end());
+
+    _mediaWidget->showMessage("Entering multi-mode");
+    _multiMode = true;
 }
 
 void MainWindow::nextEntry(int times)
