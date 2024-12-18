@@ -2,6 +2,8 @@
 
 #include <QLabel>
 #include <QListWidget>
+#include <QMouseEvent>
+#include <QScrollBar>
 
 #include "Utils.hpp"
 
@@ -34,15 +36,17 @@ const std::vector<std::string> CONTROLS_LINES = {
 HelpOverlay::HelpOverlay(QWidget* parent)
     : QFrame(parent)
 {
-    setFocusPolicy(Qt::FocusPolicy::NoFocus);
     setAttribute(Qt::WidgetAttribute::WA_TransparentForMouseEvents);
+    setFocusPolicy(Qt::FocusPolicy::NoFocus);
     setStyleSheet("QFrame {background-color: rgba(50, 50, 25, 120); }");
     auto* layout = new QVBoxLayout(this);
     setLayout(layout);
 
-    auto* list = new QListWidget(this);
-    list->setSelectionMode(QAbstractItemView::SelectionMode::NoSelection);
-    layout->addWidget(list);
+    _list = new QListWidget(this);
+    _list->setSelectionMode(QAbstractItemView::SelectionMode::NoSelection);
+    _list->setSelectionBehavior(QAbstractItemView::SelectionBehavior::SelectRows);
+    _list->setSelectionRectVisible(false);
+    layout->addWidget(_list);
 
     for (const auto& line : CONTROLS_LINES)
     {
@@ -51,9 +55,22 @@ HelpOverlay::HelpOverlay(QWidget* parent)
         label->setFocusPolicy(Qt::FocusPolicy::NoFocus);
         label->setText(QString::fromStdString(line));
         label->setFont(getTextFont());
+        label->setAttribute(Qt::WidgetAttribute::WA_TransparentForMouseEvents);
 
         QListWidgetItem* item = new QListWidgetItem();
-        list->addItem(item);
-        list->setItemWidget(item, label);
+        _list->addItem(item);
+        _list->setItemWidget(item, label);
     }
-}  
+}
+
+void HelpOverlay::moveUp()
+{
+    int step = _list->verticalScrollBar()->singleStep();
+    _list->verticalScrollBar()->setValue(_list->verticalScrollBar()->value() - step);
+}
+
+void HelpOverlay::moveDown()
+{
+    int step = _list->verticalScrollBar()->singleStep();
+    _list->verticalScrollBar()->setValue(_list->verticalScrollBar()->value() + step);
+}

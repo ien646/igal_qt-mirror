@@ -14,10 +14,7 @@ struct FileEntry
     std::string path;
     time_t mtime;
 
-    bool operator==(const FileEntry& rhs) const
-    {
-        return path == rhs.path && mtime && rhs.mtime;
-    }
+    bool operator==(const FileEntry& rhs) const { return path == rhs.path && mtime && rhs.mtime; }
 };
 
 class HelpOverlay;
@@ -36,6 +33,8 @@ protected:
 signals:
     void currentIndexChanged(int64_t index);
     void resized(QSize size);
+    void downPressed();
+    void upPressed();
 
 private:
     std::string _targetDir;

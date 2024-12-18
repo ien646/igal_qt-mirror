@@ -324,7 +324,8 @@ void MainWindow::openNavigationDialog()
     }
     if (items.empty())
     {
-        items.push_back(std::format(".. ({})", std::filesystem::canonical((std::filesystem::path(_targetDir) / "..")).string()));
+        items.push_back(
+            std::format(".. ({})", std::filesystem::canonical((std::filesystem::path(_targetDir) / "..")).string()));
     }
 
     std::sort(items.begin(), items.end());
@@ -420,8 +421,16 @@ void MainWindow::handleStandardInput(int key)
             _helpOverlay = new HelpOverlay(this);
             _helpOverlay->resize(size());
             connect(this, &MainWindow::resized, _helpOverlay, [this](QSize sz) { _helpOverlay->resize(sz); });
+            connect(this, &MainWindow::upPressed, _helpOverlay, [this] { _helpOverlay->moveUp(); });
+            connect(this, &MainWindow::downPressed, _helpOverlay, [this] { _helpOverlay->moveDown(); });
             _helpOverlay->show();
         }
+        break;
+    case Qt::Key_Up:
+        emit upPressed();
+        break;
+    case Qt::Key_Down:
+        emit downPressed();
         break;
     }
 }
@@ -674,7 +683,7 @@ void MainWindow::toggleCurrentFileInfo()
     }
     else
     {
-        if(_fileList.empty())
+        if (_fileList.empty())
         {
             return;
         }

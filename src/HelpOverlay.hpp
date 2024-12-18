@@ -2,6 +2,7 @@
 
 #include <QFrame>
 #include <QGridLayout>
+#include <QListWidget>
 #include <QWidget>
 
 class HelpOverlay : public QFrame
@@ -10,4 +11,10 @@ class HelpOverlay : public QFrame
 
 public:
     HelpOverlay(QWidget* parent);
+
+    void moveUp();
+    void moveDown();
+
+private:
+    QListWidget* _list = nullptr;
 };
