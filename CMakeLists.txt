@@ -26,15 +26,33 @@ qt_standard_project_setup()
 qt_add_executable(${PROJECT_NAME}
     "src/main.cpp"
 
+    "src/CachedMediaProxy.hpp"
     "src/CachedMediaProxy.cpp"
+
+    "src/ClickableSlider.hpp"
     "src/ClickableSlider.cpp"
-    "src/HelpDialog.cpp"
+
+    "src/HelpOverlay.hpp"
+    "src/HelpOverlay.cpp"
+
+    "src/InfoOverlayWidget.hpp"
     "src/InfoOverlayWidget.cpp"
+
+    "src/ListSelectWidget.hpp"
     "src/ListSelectWidget.cpp"
+
+    "src/MainWindow.hpp"
     "src/MainWindow.cpp"   
+
+    "src/MediaWidget.hpp"
     "src/MediaWidget.cpp"
+
     "src/Utils.cpp"
+
+    "src/VideoControls.hpp"
     "src/VideoControls.cpp"
+
+    "src/VideoPlayerWidget.hpp"
     "src/VideoPlayerWidget.cpp"
 
     "rsc/fonts.qrc"

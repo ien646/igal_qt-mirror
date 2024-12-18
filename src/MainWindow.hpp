@@ -20,6 +20,8 @@ struct FileEntry
     }
 };
 
+class HelpOverlay;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -27,10 +29,13 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(const std::string& target_path);
 
+protected:
     void keyPressEvent(QKeyEvent* ev) override;
+    void resizeEvent(QResizeEvent* ev) override;
 
 signals:
     void currentIndexChanged(int64_t index);
+    void resized(QSize size);
 
 private:
     std::string _targetDir;
@@ -42,6 +47,7 @@ private:
     MediaWidget* _mediaWidget = nullptr;
     ListSelectWidget* _upscaleSelectWidget = nullptr;
     ListSelectWidget* _navigateSelectWidget = nullptr;
+    HelpOverlay* _helpOverlay = nullptr;
     bool _controls_disabled = false;
     float _currentZoom = 1.0f;
     QPointF _currentTranslation = { 0.0f, 0.0f };

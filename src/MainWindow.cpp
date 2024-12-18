@@ -13,9 +13,8 @@
 #include <algorithm>
 #include <filesystem>
 #include <ranges>
-#include <unordered_set>
 
-#include "HelpDialog.hpp"
+#include "HelpOverlay.hpp"
 #include "Utils.hpp"
 
 MainWindow::MainWindow(const std::string& target_path)
@@ -255,7 +254,7 @@ void MainWindow::navigateDir(const std::string& path)
     }
     else
     {
-    _mediaWidget->setMedia(_fileList[_currentIndex].path);
+        _mediaWidget->setMedia(_fileList[_currentIndex].path);
     }
 }
 
@@ -325,7 +324,7 @@ void MainWindow::openNavigationDialog()
     }
     if (items.empty())
     {
-        items.push_back("..");
+        items.push_back(std::format(".. ({})", std::filesystem::canonical((std::filesystem::path(_targetDir) / "..")).string()));
     }
 
     std::sort(items.begin(), items.end());
@@ -412,9 +411,17 @@ void MainWindow::handleStandardInput(int key)
         _mediaWidget->togglePlayPauseVideo();
         break;
     case Qt::Key_H:
-        HelpDialog* helpDiag = new HelpDialog(this);
-        helpDiag->show();
-        helpDiag->setFixedSize(helpDiag->size());
+        if (_helpOverlay)
+        {
+            _helpOverlay->setVisible(!_helpOverlay->isVisible());
+        }
+        else
+        {
+            _helpOverlay = new HelpOverlay(this);
+            _helpOverlay->resize(size());
+            connect(this, &MainWindow::resized, _helpOverlay, [this](QSize sz) { _helpOverlay->resize(sz); });
+            _helpOverlay->show();
+        }
         break;
     }
 }
@@ -474,6 +481,11 @@ void MainWindow::keyPressEvent(QKeyEvent* ev)
     {
         handleStandardInput(key);
     }
+}
+
+void MainWindow::resizeEvent(QResizeEvent* ev)
+{
+    emit resized(ev->size());
 }
 
 void MainWindow::loadFiles()
