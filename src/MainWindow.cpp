@@ -249,7 +249,14 @@ void MainWindow::navigateDir(const std::string& path)
     loadFiles();
     _currentIndex = 0;
     _mediaWidget->cachedMediaProxy().clear();
+    if (_fileList.empty())
+    {
+        _mediaWidget->setMedia("");
+    }
+    else
+    {
     _mediaWidget->setMedia(_fileList[_currentIndex].path);
+    }
 }
 
 void MainWindow::deleteFile(const std::string& path)
@@ -655,6 +662,10 @@ void MainWindow::toggleCurrentFileInfo()
     }
     else
     {
+        if(_fileList.empty())
+        {
+            return;
+        }
         std::string info = getFileInfoString(_fileList[_currentIndex].path, _mediaWidget->currentMediaSource());
         _mediaWidget->showInfo(QString::fromStdString(info));
     }
