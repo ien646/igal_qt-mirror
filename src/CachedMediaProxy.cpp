@@ -10,45 +10,33 @@ CachedMediaProxy::CachedMediaProxy(size_t maxMB)
 {
 }
 
-std::shared_ptr<QImage> CachedMediaProxy::getImage(const std::string& path)
+std::shared_future<CachedImage> CachedMediaProxy::getImage(const std::string& path)
 {
     assert(std::filesystem::exists(path));
 
-    if(_cached_images.count(path))
+    if (_cached_images.count(path))
     {
-        return _cached_images.at(path).get();
+        return _cached_images.at(path);
     }
-
-    if(_future_images.count(path))
+    else
     {
-        auto& future = _future_images.at(path);
-        future.wait();
-        CachedImage cachedImage = future.get();
-        std::shared_ptr<QImage> result = cachedImage.get();
-        _future_images.erase(cachedImage.path());
+        std::shared_future<CachedImage> future = std::async(std::launch::async, [this, path] {
+            const auto now = std::chrono::system_clock::now().time_since_epoch().count();
+            CachedImage cachedImage(path, now, QImage(QString::fromStdString(path)));
 
-        if(_currentCacheSize + cachedImage.getMemorySize() > _maxCacheSize)
-        {
-            deleteOldest();
-        }
-        _currentCacheSize += cachedImage.getMemorySize();
+            _mutex.lock();
+            if (_currentCacheSize + cachedImage.getMemorySize() > _maxCacheSize)
+            {
+                deleteOldest();
+            }
+            _currentCacheSize += cachedImage.getMemorySize();
+            _mutex.unlock();
 
-        _cached_images.emplace(cachedImage.path(), std::move(cachedImage));
-        return result;
+            return cachedImage;
+        });
+        _cached_images.emplace(path, future);
+        return future;
     }
-
-    const auto now = std::chrono::system_clock::now().time_since_epoch().count();
-    CachedImage cachedImage(path, now, QImage(QString::fromStdString(path)));
-
-    if(_currentCacheSize + cachedImage.getMemorySize() > _maxCacheSize)
-    {
-        deleteOldest();
-    }
-    _currentCacheSize += cachedImage.getMemorySize();
-
-    auto result = cachedImage.get();
-    _cached_images.emplace(path, std::move(cachedImage));
-    return result;
 }
 
 std::shared_ptr<QMovie> CachedMediaProxy::getAnimation(const std::string& path)
@@ -58,44 +46,49 @@ std::shared_ptr<QMovie> CachedMediaProxy::getAnimation(const std::string& path)
 
 void CachedMediaProxy::preCacheImage(const std::string& path)
 {
-    if(!isImage(path))
-    {
-        return;
-    }
-    
-    if(_cached_images.count(path) || _future_images.count(path))
+    if (!isImage(path))
     {
         return;
     }
 
-    std::future<CachedImage> future = std::async(std::launch::async, [&]() -> CachedImage {
+    if (_cached_images.count(path))
+    {
+        return;
+    }
+
+    std::shared_future<CachedImage> future = std::async(std::launch::async, [&]() -> CachedImage {
         QImage image(QString::fromStdString(path));
         time_t now = std::chrono::system_clock::now().time_since_epoch().count();
         return CachedImage(path, now, std::move(image));
     });
 
-    _future_images.emplace(path, std::move(future));
+    _cached_images.emplace(path, std::move(future));
 }
 
 void CachedMediaProxy::notifyBigJump()
 {
-    std::thread clearThread([currentFutures = std::move(_future_images)]{
-        for(auto& [path, future] : currentFutures)
+    std::thread clearThread([futures = std::move(_cached_images)] {
+        for (auto& [path, future] : futures)
         {
-            future.wait();
+            if (future.valid())
+            {
+                future.wait();
+            }
         }
     });
     clearThread.detach();
-    _future_images = decltype(_future_images){ };
+    _cached_images = decltype(_cached_images){};
 }
 
 void CachedMediaProxy::clear()
 {
-    for(auto& [path, future] : _future_images)
+    for (auto& [path, future] : _cached_images)
     {
-        future.wait();
+        if (future.valid())
+        {
+            future.wait();
+        }
     }
-    _future_images.clear();
     _cached_images.clear();
     _currentCacheSize = 0;
 }
@@ -103,15 +96,16 @@ void CachedMediaProxy::clear()
 void CachedMediaProxy::deleteOldest()
 {
     const CachedImage* oldest = nullptr;
-    for(const auto& [path, image] : _cached_images)
+    for (const auto& [path, future] : _cached_images)
     {
-        if(oldest == nullptr)
+        const auto& image = future.get();
+        if (oldest == nullptr)
         {
             oldest = &image;
             continue;
         }
 
-        if(image.lastAccess() < oldest->lastAccess())
+        if (image.lastAccess() < oldest->lastAccess())
         {
             oldest = &image;
         }

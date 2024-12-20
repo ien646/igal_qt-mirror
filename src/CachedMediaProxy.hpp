@@ -37,7 +37,7 @@ class CachedMediaProxy
 public:
     CachedMediaProxy(size_t maxMB = 256);
 
-    std::shared_ptr<QImage> getImage(const std::string& path);
+    std::shared_future<CachedImage> getImage(const std::string& path);
     std::shared_ptr<QMovie> getAnimation(const std::string& path);
 
     void preCacheImage(const std::string& path);
@@ -48,8 +48,8 @@ public:
 private:
     size_t _maxCacheSize;
     size_t _currentCacheSize = 0;
-    std::unordered_map<std::string, CachedImage> _cached_images;
-    std::unordered_map<std::string, std::future<CachedImage>> _future_images;
+    std::unordered_map<std::string, std::shared_future<CachedImage>> _cached_images;
+    std::mutex _mutex;
 
     void deleteOldest();
 };
