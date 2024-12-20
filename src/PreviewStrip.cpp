@@ -15,8 +15,8 @@ PreviewStrip::PreviewStrip(CachedMediaProxy& cachedMediaProxy, QWidget* parent)
     {
         auto* label = new QLabel(this);
         label->setText("NO-MEDIA");
-        label->setStyleSheet("QLabel { background-color: #222222; }");
-        label->setFixedSize(112, 112);
+        label->setStyleSheet("QLabel { background-color: #222222; color: #FFFFFF}");
+        label->setFixedSize(116, 116);
         label->setAlignment(Qt::AlignmentFlag::AlignCenter);
 
         _labels.emplace_back(label);
@@ -68,6 +68,11 @@ void PreviewStrip::loadImages(const std::vector<std::string>& paths)
                                 Qt::AspectRatioMode::KeepAspectRatio,
                                 Qt::TransformationMode::SmoothTransformation));
                     completed[i] = true;
+                }
+                else
+                {
+                    _labels[i]->setText("LOADING...");
+                    _labels[i]->setPixmap({});
                 }
             }
         }

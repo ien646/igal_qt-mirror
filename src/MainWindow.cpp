@@ -74,7 +74,7 @@ MainWindow::MainWindow(const std::string& target_path)
     if (it == _fileList.cend())
     {
         _currentIndex = 0;
-        _mediaWidget->setMedia("");
+        _mediaWidget->setMedia("");        
     }
     else
     {
@@ -141,6 +141,8 @@ MainWindow::MainWindow(const std::string& target_path)
     });
 
     connect(_navigateSelectWidget, &ListSelectWidget::cancelled, this, [this] { _navigateSelectWidget->hide(); });
+
+    emit currentIndexChanged(_currentIndex);
 
     setFocus(Qt::FocusReason::MouseFocusReason);
 }
@@ -295,6 +297,11 @@ void MainWindow::openDir()
 
     diag.exec();
 
+    if(diag.result() == QDialog::Rejected)
+    {
+        return;
+    }
+
     const auto dir = diag.directory();
     if (std::filesystem::exists(dir.filesystemPath()))
     {
@@ -310,6 +317,7 @@ void MainWindow::openDir()
             _mediaWidget->setMedia(_fileList[_currentIndex].path);
         }
     }
+    emit currentIndexChanged(_currentIndex);
 }
 
 void MainWindow::openNavigationDialog()
@@ -460,6 +468,8 @@ void MainWindow::handleStandardInput(int key)
                 _previewStrip->loadImages(paths);
             });
             _previewStrip->show();
+
+            emit currentIndexChanged(_currentIndex);
         }
     }
 }
