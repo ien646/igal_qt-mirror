@@ -18,6 +18,7 @@ struct FileEntry
 };
 
 class HelpOverlay;
+class PreviewStrip;
 
 class MainWindow : public QMainWindow
 {
@@ -47,6 +48,7 @@ private:
     ListSelectWidget* _upscaleSelectWidget = nullptr;
     ListSelectWidget* _navigateSelectWidget = nullptr;
     HelpOverlay* _helpOverlay = nullptr;
+    PreviewStrip* _previewStrip = nullptr;
     bool _controls_disabled = false;
     float _currentZoom = 1.0f;
     QPointF _currentTranslation = { 0.0f, 0.0f };

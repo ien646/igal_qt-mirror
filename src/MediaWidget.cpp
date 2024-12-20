@@ -74,7 +74,7 @@ void MediaWidget::setMedia(const std::string& source)
     else if (isImage(_target))
     {
         _currentMedia = CurrentMediaType::Image;
-        _image = _cachedMediaProxy.getImage(source).get().get();
+        _image = _cachedMediaProxy.getImage(source).get().image();
         _imageLabel->setMovie(nullptr);
         updateTransform();
         _imageLabel->show();

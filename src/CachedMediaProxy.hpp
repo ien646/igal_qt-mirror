@@ -21,7 +21,7 @@ public:
     CachedImage(CachedImage&&) = default;
 
     inline void ping() { _lastAccess = std::chrono::system_clock::now().time_since_epoch().count(); }
-    inline std::shared_ptr<QImage> get() const { return _data; }
+    inline std::shared_ptr<QImage> image() const { return _data; }
     inline auto getMemorySize() const { return _data->sizeInBytes(); }
     inline time_t lastAccess() const { return _lastAccess; }
     inline const std::string& path() const { return _path; }

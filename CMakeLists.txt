@@ -47,6 +47,9 @@ qt_add_executable(${PROJECT_NAME}
     "src/MediaWidget.hpp"
     "src/MediaWidget.cpp"
 
+    "src/PreviewStrip.hpp"
+    "src/PreviewStrip.cpp"
+
     "src/Utils.cpp"
 
     "src/VideoControls.hpp"

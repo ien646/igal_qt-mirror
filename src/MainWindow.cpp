@@ -15,6 +15,7 @@
 #include <ranges>
 
 #include "HelpOverlay.hpp"
+#include "PreviewStrip.hpp"
 #include "Utils.hpp"
 
 MainWindow::MainWindow(const std::string& target_path)
@@ -432,6 +433,34 @@ void MainWindow::handleStandardInput(int key)
     case Qt::Key_Down:
         emit downPressed();
         break;
+
+    case Qt::Key_P:
+        if (_previewStrip)
+        {
+            _previewStrip->setVisible(!_previewStrip->isVisible());
+        }
+        else
+        {
+            _previewStrip = new PreviewStrip(_mediaWidget->cachedMediaProxy(), this);
+            _previewStrip->resize(size());
+            connect(this, &MainWindow::resized, _previewStrip, [this](QSize sz) { _previewStrip->resize(sz); });
+            connect(this, &MainWindow::currentIndexChanged, _previewStrip, [this](int64_t index) {
+                std::vector<std::string> paths;
+                for (int i = -2; i <= 2; ++i)
+                {
+                    if ((i + index) >= 0 && (i + index) < _fileList.size())
+                    {
+                        paths.emplace_back(_fileList[i + index].path);
+                    }
+                    else
+                    {
+                        paths.emplace_back();
+                    }
+                }
+                _previewStrip->loadImages(paths);
+            });
+            _previewStrip->show();
+        }
     }
 }
 
