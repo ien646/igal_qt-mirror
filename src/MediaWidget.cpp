@@ -66,7 +66,7 @@ void MediaWidget::setMedia(const std::string& source)
         _animation = _cachedMediaProxy.getAnimation(source);
         _animation->setCacheMode(QMovie::CacheMode::CacheAll);
         connectAnimationSignals();
-        _imageLabel->setPixmap(QPixmap());
+        _imageLabel->setPixmap({});
         _animation->start();
         syncAnimationSize();
         _imageLabel->show();
@@ -174,19 +174,19 @@ void MediaWidget::resizeEvent(QResizeEvent* ev)
 {
     if (_currentMedia == CurrentMediaType::Image)
     {
-        updateTransform();
-        _imageLabel->setFixedSize(ev->size());
+        updateTransform();        
         _imageLabel->setMinimumSize(600, 400);
     }
     else if (_currentMedia == CurrentMediaType::Animation)
     {
         syncAnimationSize();
+        _imageLabel->setMinimumSize(600, 400);
     }
     else if (_currentMedia == CurrentMediaType::Video)
     {
-        _videoPlayer->setFixedSize(ev->size());
         _videoPlayer->setMinimumSize(1, 1);
     }
+    _imageLabel->setFixedSize(ev->size());
 }
 
 CachedMediaProxy& MediaWidget::cachedMediaProxy()
