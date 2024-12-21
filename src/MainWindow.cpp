@@ -259,6 +259,7 @@ void MainWindow::navigateDir(const std::string& path)
     {
         _mediaWidget->setMedia(_fileList[_currentIndex].path);
     }
+    emit currentIndexChanged(_currentIndex);
 }
 
 void MainWindow::deleteFile(const std::string& path)
@@ -613,6 +614,9 @@ void MainWindow::loadFilesMulti(const std::vector<std::string>& abs_directories)
 
     _mediaWidget->showMessage("Entering multi-mode");
     _multiMode = true;
+
+    _currentIndex = 0;
+    emit currentIndexChanged(_currentIndex);
 }
 
 void MainWindow::nextEntry(int times)
