@@ -37,6 +37,7 @@ public:
     void hideInfo();
     void toggleMute();
     void togglePlayPauseVideo();
+    void updateTransform();
 
     void paintEvent(QPaintEvent* ev) override;
     void resizeEvent(QResizeEvent* ev) override;
@@ -74,7 +75,5 @@ private:
     QPointF _currentTranslation = { 0.0f, 0.0f };
 
     void syncAnimationSize();
-    void updateTransform();    
-
     void connectAnimationSignals();
 };

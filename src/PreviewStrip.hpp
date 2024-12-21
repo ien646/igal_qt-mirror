@@ -18,5 +18,6 @@ private:
     CachedMediaProxy& _cachedMediaProxy;
     QHBoxLayout* _layout = nullptr;
     std::vector<QLabel*> _labels;
+    std::vector<QMovie*> _movies;
     QTimer* _timer = nullptr;
 };

@@ -74,7 +74,7 @@ MainWindow::MainWindow(const std::string& target_path)
     if (it == _fileList.cend())
     {
         _currentIndex = 0;
-        _mediaWidget->setMedia("");        
+        _mediaWidget->setMedia("");
     }
     else
     {
@@ -298,7 +298,7 @@ void MainWindow::openDir()
 
     diag.exec();
 
-    if(diag.result() == QDialog::Rejected)
+    if (diag.result() == QDialog::Rejected)
     {
         return;
     }

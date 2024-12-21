@@ -1,4 +1,5 @@
 #include "PreviewStrip.hpp"
+#include "Utils.hpp"
 
 PreviewStrip::PreviewStrip(CachedMediaProxy& cachedMediaProxy, QWidget* parent)
     : QWidget(parent)
@@ -25,6 +26,7 @@ PreviewStrip::PreviewStrip(CachedMediaProxy& cachedMediaProxy, QWidget* parent)
     _layout->addStretch(1);
 
     _timer = new QTimer(this);
+    _movies = { 5, nullptr };
 
     setLayout(_layout);
 }
@@ -32,6 +34,14 @@ PreviewStrip::PreviewStrip(CachedMediaProxy& cachedMediaProxy, QWidget* parent)
 void PreviewStrip::loadImages(const std::vector<std::string>& paths)
 {
     assert(paths.size() <= _labels.size());
+
+    for (auto* movie : _movies)
+    {
+        if (movie)
+        {
+            movie->stop();
+        }
+    }
 
     _timer->setInterval(100);
     _timer->setSingleShot(false);
@@ -48,32 +58,63 @@ void PreviewStrip::loadImages(const std::vector<std::string>& paths)
             }
 
             const auto& path = paths[i];
+
             if (path.empty())
             {
+                _labels[i]->setScaledContents(false);
+                _labels[i]->clear();
                 _labels[i]->setText("NO-MEDIA");
-                _labels[i]->setPixmap({});
                 completed[i] = true;
             }
-            else
+            else if (!isImage(path) && !isAnimation(path))
             {
+                _labels[i]->setScaledContents(false);
+                _labels[i]->clear();
+                _labels[i]->setText("VIDEO");
+                completed[i] = true;
+            }
+            else if (isImage(path))
+            {
+                _labels[i]->setScaledContents(false);
                 auto future = _cachedMediaProxy.getImage(path);
                 if (future.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready)
                 {
                     auto& result = future.get();
-                    _labels[i]->setText({});
+                    _labels[i]->clear();
                     _labels[i]->setPixmap(
                         QPixmap::fromImage(*result.image())
                             .scaled(
                                 _labels[i]->size(),
                                 Qt::AspectRatioMode::KeepAspectRatio,
                                 Qt::TransformationMode::SmoothTransformation));
+                    _labels[i]->update();
                     completed[i] = true;
                 }
                 else
                 {
+                    _labels[i]->setScaledContents(false);
+                    _labels[i]->clear();
                     _labels[i]->setText("LOADING...");
-                    _labels[i]->setPixmap({});
                 }
+            }
+            else if (isAnimation(path))
+            {
+                auto anim = _cachedMediaProxy.getAnimation(path);
+                if (_movies[i])
+                {
+                    _movies[i]->stop();
+                    delete _movies[i];
+                }
+                _movies[i] = new QMovie(QString::fromStdString(path));
+                _movies[i]->setScaledSize(_labels[i]->size());
+                _movies[i]->setCacheMode(QMovie::CacheMode::CacheNone);
+                _movies[i]->start();
+
+                _labels[i]->clear();
+                _labels[i]->setMovie(_movies[i]);
+                _labels[i]->setScaledContents(true);
+
+                completed[i] = true;
             }
         }
         if (paths.empty())

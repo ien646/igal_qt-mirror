@@ -20,6 +20,7 @@ std::shared_future<CachedImage> CachedMediaProxy::getImage(const std::string& pa
     }
     else
     {
+        std::lock_guard lock(_mutex);
         std::shared_future<CachedImage> future = std::async(std::launch::async, [this, path] {
             const auto now = std::chrono::system_clock::now().time_since_epoch().count();
             CachedImage cachedImage(path, now, QImage(QString::fromStdString(path)));
@@ -55,6 +56,8 @@ void CachedMediaProxy::preCacheImage(const std::string& path)
     {
         return;
     }
+
+    std::lock_guard lock(_mutex);
 
     std::shared_future<CachedImage> future = std::async(std::launch::async, [&]() -> CachedImage {
         QImage image(QString::fromStdString(path));
