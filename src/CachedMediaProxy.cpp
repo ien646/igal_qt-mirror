@@ -70,25 +70,12 @@ void CachedMediaProxy::preCacheImage(const std::string& path)
 
 void CachedMediaProxy::notifyBigJump()
 {
-    for (auto& [path, future] : _cached_images)
-    {
-        if (future.valid())
-        {
-            future.wait();
-        }
-    }
-    _cached_images = decltype(_cached_images){};
+    clear();
 }
 
 void CachedMediaProxy::clear()
 {
-    for (auto& [path, future] : _cached_images)
-    {
-        if (future.valid())
-        {
-            future.wait();
-        }
-    }
+    std::lock_guard lock(_mutex);
     _cached_images.clear();
     _currentCacheSize = 0;
 }

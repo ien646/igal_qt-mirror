@@ -35,6 +35,8 @@ void PreviewStrip::loadImages(const std::vector<std::string>& paths)
 {
     assert(paths.size() <= _labels.size());
 
+    _paths = paths;
+
     for (auto* movie : _movies)
     {
         if (movie)
@@ -45,33 +47,32 @@ void PreviewStrip::loadImages(const std::vector<std::string>& paths)
 
     _timer->setInterval(100);
     _timer->setSingleShot(false);
-    disconnect(_timer);
 
-    std::vector<bool> completed(paths.size(), false);
+    _completed = std::vector<bool>(paths.size(), false);
 
-    connect(_timer, &QTimer::timeout, this, [this, paths = paths, completed = std::move(completed)]() mutable {
-        for (size_t i = 0; i < paths.size(); ++i)
+    connect(_timer, &QTimer::timeout, this, [this]() {
+        for (size_t i = 0; i < _paths.size(); ++i)
         {
-            if (completed[i])
+            if (_completed[i])
             {
                 continue;
             }
 
-            const auto& path = paths[i];
+            const auto& path = _paths[i];
 
             if (path.empty())
             {
                 _labels[i]->setScaledContents(false);
                 _labels[i]->clear();
                 _labels[i]->setText("NO-MEDIA");
-                completed[i] = true;
+                _completed[i] = true;
             }
             else if (!isImage(path) && !isAnimation(path))
             {
                 _labels[i]->setScaledContents(false);
                 _labels[i]->clear();
                 _labels[i]->setText("VIDEO");
-                completed[i] = true;
+                _completed[i] = true;
             }
             else if (isImage(path))
             {
@@ -88,7 +89,7 @@ void PreviewStrip::loadImages(const std::vector<std::string>& paths)
                                 Qt::AspectRatioMode::KeepAspectRatio,
                                 Qt::TransformationMode::SmoothTransformation));
                     _labels[i]->update();
-                    completed[i] = true;
+                    _completed[i] = true;
                 }
                 else
                 {
@@ -114,10 +115,10 @@ void PreviewStrip::loadImages(const std::vector<std::string>& paths)
                 _labels[i]->setMovie(_movies[i]);
                 _labels[i]->setScaledContents(true);
 
-                completed[i] = true;
+                _completed[i] = true;
             }
         }
-        if (paths.empty())
+        if (std::ranges::all_of(_completed, [](bool v) { return v; }))
         {
             _timer->stop();
         }

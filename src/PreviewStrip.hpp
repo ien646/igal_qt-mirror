@@ -19,5 +19,7 @@ private:
     QHBoxLayout* _layout = nullptr;
     std::vector<QLabel*> _labels;
     std::vector<QMovie*> _movies;
+    std::vector<bool> _completed;
+    std::vector<std::string> _paths;
     QTimer* _timer = nullptr;
 };
