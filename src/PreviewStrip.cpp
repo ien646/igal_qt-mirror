@@ -4,7 +4,7 @@
 constexpr auto LABEL_STYLESHEET = R"(
     QLabel { 
         background-color: #222222; 
-        color: #FFFFFF;
+        color:rgb(245, 255, 215);
         border-style: solid;
         border-width: 1px;
         border-color: rgba(255, 255, 255, 50);
