@@ -1,6 +1,17 @@
 #include "PreviewStrip.hpp"
 #include "Utils.hpp"
 
+constexpr auto LABEL_STYLESHEET = R"(
+    QLabel { 
+        background-color: #222222; 
+        color: #FFFFFF;
+        border-style: solid;
+        border-width: 1px;
+        border-color: rgba(255, 255, 255, 50);
+        border-radius: 2px;
+    }
+)";
+
 PreviewStrip::PreviewStrip(CachedMediaProxy& cachedMediaProxy, QWidget* parent)
     : QWidget(parent)
     , _cachedMediaProxy(cachedMediaProxy)
@@ -16,7 +27,8 @@ PreviewStrip::PreviewStrip(CachedMediaProxy& cachedMediaProxy, QWidget* parent)
     {
         auto* label = new QLabel(this);
         label->setText("NO-MEDIA");
-        label->setStyleSheet("QLabel { background-color: #222222; color: #FFFFFF}");
+        label->setStyleSheet(LABEL_STYLESHEET);
+        label->setFont(getTextFont());
         label->setFixedSize(116, 116);
         label->setAlignment(Qt::AlignmentFlag::AlignCenter);
 
