@@ -174,7 +174,7 @@ void MediaWidget::resizeEvent(QResizeEvent* ev)
 {
     if (_currentMedia == CurrentMediaType::Image)
     {
-        updateTransform();        
+        updateTransform();
         _imageLabel->setMinimumSize(600, 400);
     }
     else if (_currentMedia == CurrentMediaType::Animation)
@@ -252,8 +252,10 @@ void MediaWidget::updateTransform()
     auto sourceRectSize = size().scaled(pixmapSize, Qt::KeepAspectRatioByExpanding) / _currentZoom;
     const auto diff = pixmapSize - sourceRectSize;
 
-    float translateX = ien::remap(_currentTranslation.x(), -1, 1, -diff.width() / 2, diff.width() / 2);
-    float translateY = ien::remap(_currentTranslation.y(), -1, 1, -diff.height() / 2, diff.height() / 2);
+    float translateX = ien::
+        remap(_currentTranslation.x(), -1, 1, static_cast<float>(-diff.width()) / 2, static_cast<float>(diff.width()) / 2);
+    float translateY = ien::
+        remap(_currentTranslation.y(), -1, 1, static_cast<float>(-diff.height()) / 2, static_cast<float>(diff.height()) / 2);
 
     const QRect sourceRect(
         (diff.width() / 2.0f) + translateX,
@@ -277,7 +279,7 @@ void MediaWidget::resetTransform()
 
 void MediaWidget::increaseVideoSpeed(float amount)
 {
-    if(_currentMedia == CurrentMediaType::Video)
+    if (_currentMedia == CurrentMediaType::Video)
     {
         const auto rate = std::max(0.0, _videoPlayer->mediaPlayer()->playbackRate() + amount);
         _videoPlayer->mediaPlayer()->setPlaybackRate(rate);

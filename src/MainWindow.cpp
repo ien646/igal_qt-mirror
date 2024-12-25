@@ -334,8 +334,7 @@ void MainWindow::openNavigationDialog()
     }
     if (items.empty())
     {
-        items.push_back(
-            std::format(".. ({})", std::filesystem::canonical((std::filesystem::path(_targetDir) / "..")).string()));
+        items.push_back("..");
     }
 
     std::sort(items.begin(), items.end());
