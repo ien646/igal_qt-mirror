@@ -101,6 +101,14 @@ void ListSelectWidget::keyPressEvent(QKeyEvent* ev)
             --_currentIndex;
         }
     }
+    else if(ev->key() == Qt::Key_Home)
+    {
+        _currentIndex = 0;
+    }
+    else if(ev->key() == Qt::Key_End)
+    {
+        _currentIndex = _items.size() - 1;
+    }
     else if (ev->key() == Qt::Key_Return)
     {
         _selectedIndices.insert(_currentIndex);
