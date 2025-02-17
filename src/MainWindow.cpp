@@ -14,6 +14,8 @@
 #include <filesystem>
 #include <ranges>
 
+#include <omp.h>
+
 #include "HelpOverlay.hpp"
 #include "PreviewStrip.hpp"
 #include "Utils.hpp"
@@ -474,6 +476,43 @@ void MainWindow::handleStandardInput(int key)
     }
 }
 
+void MainWindow::filterVideos()
+{
+    std::vector<FileEntry> resultList;
+    size_t total = _fileList.size();
+    std::atomic_size_t current = 0;
+    size_t next_update = 100;
+
+#pragma omp parallel
+    {
+        std::vector<FileEntry> threadResult;
+        for (long i = 0; i < _fileList.size(); ++i)
+        {
+            const auto& entry = _fileList[i];
+            if (omp_get_thread_num() == 0 && current >= next_update)
+            {
+                next_update += 100;
+                _mediaWidget->showMessage(QString::fromStdString(std::format("{}/{}", current.load(), total)));
+                QGuiApplication::processEvents();
+            }
+
+            if (isVideo(entry.path) || isAnimation(entry.path))
+            {
+                threadResult.push_back(std::move(entry));
+            }
+            ++current;
+        }
+#pragma omp critical
+        std::ranges::move(threadResult, std::back_inserter(resultList));
+    }
+
+    _mediaWidget->showMessage(QString::fromStdString(std::format("Filtered {} video files", resultList.size())));
+
+    _fileList = std::move(resultList);
+    _currentIndex = 0;
+    _mediaWidget->setMedia(_fileList[_currentIndex].path);
+}
+
 void MainWindow::keyPressEvent(QKeyEvent* ev)
 {
     if (_controls_disabled)
@@ -500,6 +539,18 @@ void MainWindow::keyPressEvent(QKeyEvent* ev)
             _upscaleSelectWidget->show();
             _upscaleSelectWidget->setFocus(Qt::FocusReason::MouseFocusReason);
             _mediaLayout->setCurrentWidget(_upscaleSelectWidget);
+        }
+        else if (key == Qt::Key_Minus)
+        {
+            if (!_videoFilter)
+            {
+                filterVideos();
+            }
+            else
+            {
+                loadFiles();
+            }
+            _videoFilter = !_videoFilter;
         }
         else
         {

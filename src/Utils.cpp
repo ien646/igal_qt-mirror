@@ -63,11 +63,16 @@ bool isImage(const std::string& source)
     return IMAGE_EXTENSIONS.count(ext);
 }
 
-bool isAnimation(const std::string& path)
+bool isAnimation(const std::string& path, bool shallow)
 {
     const std::string extension = ien::str_tolower(ien::get_file_extension(path));
     if (ANIMATION_EXTENSIONS.count(extension))
     {
+        if(shallow)
+        {
+            return false;
+        }
+
         const auto data = ien::read_file_binary(path);
         if (!data)
         {

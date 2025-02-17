@@ -53,6 +53,7 @@ private:
     float _currentZoom = 1.0f;
     QPointF _currentTranslation = { 0.0f, 0.0f };
     bool _multiMode = false;
+    bool _videoFilter = false;
 
     void loadFiles();
     void loadFilesMulti(const std::vector<std::string>& abs_directories);
@@ -74,4 +75,5 @@ private:
     void openNavigationDialog();
     void handleNumpadInput(int key);
     void handleStandardInput(int key);
+    void filterVideos();
 };

@@ -21,6 +21,8 @@ CPMAddPackage(
 
 find_package(Qt6 COMPONENTS Widgets Multimedia MultimediaWidgets REQUIRED)
 
+find_package(OpenMP REQUIRED)
+
 qt_standard_project_setup()
 
 qt_add_executable(${PROJECT_NAME}
@@ -72,7 +74,13 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
     AUTORCC ON
 )
 
-target_link_libraries(${PROJECT_NAME} PUBLIC libien Qt6::Core Qt6::Widgets Qt6::Multimedia Qt6::MultimediaWidgets)
+target_link_libraries(${PROJECT_NAME} PUBLIC 
+    libien 
+    Qt6::Core 
+    Qt6::Widgets 
+    Qt6::Multimedia 
+    Qt6::MultimediaWidgets
+    ${OpenMP_CXX_LIB_NAMES})
 
 install(TARGETS ${PROJECT_NAME}
 	BUNDLE DESTINATION .

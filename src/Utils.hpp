@@ -13,7 +13,7 @@
 
 bool hasMediaExtension(const std::string& path);
 bool isImage(const std::string& path);
-bool isAnimation(const std::string& path);
+bool isAnimation(const std::string& path, bool shallow = false);
 bool isVideo(const std::string& path);
 std::unordered_map<int, std::string> getLinksFromFile(const std::string& path);
 std::vector<std::string> getUpscaleModels();
