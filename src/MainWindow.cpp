@@ -481,30 +481,42 @@ void MainWindow::filterVideos()
     std::vector<FileEntry> resultList;
     size_t total = _fileList.size();
     std::atomic_size_t current = 0;
-    size_t next_update = 100;
+
+    bool task_finished = false;
+
+    std::thread task_thread([&] {
 
 #pragma omp parallel
-    {
-        std::vector<FileEntry> threadResult;
-        for (long i = 0; i < _fileList.size(); ++i)
         {
-            const auto& entry = _fileList[i];
-            if (omp_get_thread_num() == 0 && current >= next_update)
+            std::vector<FileEntry> threadResult;
+#pragma omp for
+            for (long i = 0; i < _fileList.size(); ++i)
             {
-                next_update += 100;
-                _mediaWidget->showMessage(QString::fromStdString(std::format("{}/{}", current.load(), total)));
-                QGuiApplication::processEvents();
-            }
+                const auto& entry = _fileList[i];
+                if (omp_get_thread_num() == 0)
+                {
+                    QMetaObject::invokeMethod(this, [&] {
+                        _mediaWidget->showMessage(QString::fromStdString(std::format("{}/{}", current.load(), total)));
+                    });
+                }
 
-            if (isVideo(entry.path) || isAnimation(entry.path))
-            {
-                threadResult.push_back(std::move(entry));
+                if (isVideo(entry.path) || isAnimation(entry.path))
+                {
+                    threadResult.push_back(std::move(entry));
+                }
+                ++current;
             }
-            ++current;
-        }
 #pragma omp critical
-        std::ranges::move(threadResult, std::back_inserter(resultList));
+            std::ranges::move(threadResult, std::back_inserter(resultList));
+        }
+        task_finished = true;
+    });
+
+    while (!task_finished)
+    {
+        QGuiApplication::processEvents();
     }
+    task_thread.join();
 
     _mediaWidget->showMessage(QString::fromStdString(std::format("Filtered {} video files", resultList.size())));
 
