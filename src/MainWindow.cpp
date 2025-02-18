@@ -576,7 +576,7 @@ void MainWindow::upscaleVideo(const std::string& path, const std::string& modelS
             QMetaObject::invokeMethod(this, [=, this] { _mediaWidget->showMessage(QString::fromStdString(text)); });
         });
 
-        if (!std::filesystem::exists(targetpath))
+        if (!std::filesystem::exists(targetpath) || std::filesystem::file_size(targetpath) < 1024)
         {
             _mediaWidget->showMessage("Upscale command failed!");
             _controls_disabled = false;
