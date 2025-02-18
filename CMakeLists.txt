@@ -64,7 +64,10 @@ qt_add_executable(${PROJECT_NAME}
     "rsc/icons.qrc"
 )
 
-target_compile_definitions(${PROJECT_NAME} PUBLIC "IGAL_QT_VERSION=\"${CMAKE_PROJECT_VERSION}\"")
+target_compile_definitions(${PROJECT_NAME} PUBLIC 
+    "IGAL_QT_VERSION=\"${CMAKE_PROJECT_VERSION}\""
+    "IGAL_QT_BUILD_MODE=\"${CMAKE_BUILD_TYPE}\""
+)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
     CXX_STANDARD 20

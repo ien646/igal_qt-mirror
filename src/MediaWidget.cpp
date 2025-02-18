@@ -56,13 +56,13 @@ void MediaWidget::setMedia(const std::string& source)
 
     if (isVideo(_target))
     {
-        _currentMedia = CurrentMediaType::Video;
+        _currentMediaType = CurrentMediaType::Video;
         _videoPlayer->setMedia(source);
         _videoPlayer->show();
     }
     else if (isAnimation(_target))
     {
-        _currentMedia = CurrentMediaType::Animation;
+        _currentMediaType = CurrentMediaType::Animation;
         _animation = _cachedMediaProxy.getAnimation(source);
         _animation->setCacheMode(QMovie::CacheMode::CacheAll);
         connectAnimationSignals();
@@ -73,7 +73,7 @@ void MediaWidget::setMedia(const std::string& source)
     }
     else if (isImage(_target))
     {
-        _currentMedia = CurrentMediaType::Image;
+        _currentMediaType = CurrentMediaType::Image;
         _image = _cachedMediaProxy.getImage(source).get().image();
         _imageLabel->setMovie(nullptr);
         updateTransform();
@@ -83,7 +83,7 @@ void MediaWidget::setMedia(const std::string& source)
 
 std::variant<const QImage*, const QMovie*, const QMediaPlayer*> MediaWidget::currentMediaSource()
 {
-    switch (_currentMedia)
+    switch (_currentMediaType)
     {
     case CurrentMediaType::Image:
         return _image.get();
@@ -134,7 +134,7 @@ void MediaWidget::toggleMute()
 
 void MediaWidget::togglePlayPauseVideo()
 {
-    if (_currentMedia == CurrentMediaType::Video)
+    if (_currentMediaType == CurrentMediaType::Video)
     {
         if (_videoPlayer->mediaPlayer()->isPlaying())
         {
@@ -172,17 +172,17 @@ void MediaWidget::paintEvent(QPaintEvent* ev)
 
 void MediaWidget::resizeEvent(QResizeEvent* ev)
 {
-    if (_currentMedia == CurrentMediaType::Image)
+    if (_currentMediaType == CurrentMediaType::Image)
     {
         updateTransform();
         _imageLabel->setMinimumSize(600, 400);
     }
-    else if (_currentMedia == CurrentMediaType::Animation)
+    else if (_currentMediaType == CurrentMediaType::Animation)
     {
         syncAnimationSize();
         _imageLabel->setMinimumSize(600, 400);
     }
-    else if (_currentMedia == CurrentMediaType::Video)
+    else if (_currentMediaType == CurrentMediaType::Video)
     {
         _videoPlayer->setMinimumSize(1, 1);
     }
@@ -279,13 +279,13 @@ void MediaWidget::resetTransform()
 
 void MediaWidget::increaseVideoSpeed(float amount)
 {
-    if (_currentMedia == CurrentMediaType::Video)
+    if (_currentMediaType == CurrentMediaType::Video)
     {
         const auto rate = std::max(0.0, _videoPlayer->mediaPlayer()->playbackRate() + amount);
         _videoPlayer->mediaPlayer()->setPlaybackRate(rate);
         showMessage("x" + QString::number(rate, 10, 2));
     }
-    else if (_currentMedia == CurrentMediaType::Animation)
+    else if (_currentMediaType == CurrentMediaType::Animation)
     {
         const auto rate = std::max(0.0f, _animation->speed() + (100.0f * amount));
         _animation->setSpeed(rate);

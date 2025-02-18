@@ -47,9 +47,9 @@ int main(int argc, char** argv)
         window.setWindowIcon(icon);
         
 #ifdef IGAL_QT_VERSION
-        window.setWindowTitle(QString::fromStdString(std::format("IGAL-QT <{}>", IGAL_QT_VERSION)));
+        window.setWindowTitle(QString::fromStdString(std::format("igal-qt {} {}", IGAL_QT_BUILD_MODE, IGAL_QT_VERSION)));
 #else
-        window.setWindowTitle("IGAL-QT");
+        window.setWindowTitle("igal-qt");
 #endif
 
         window.resize(1000, 800);

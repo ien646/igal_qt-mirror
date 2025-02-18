@@ -28,7 +28,8 @@ MainWindow::MainWindow(const std::string& target_path)
     _mainWidget = new QWidget(this);
     _mediaLayout = new QStackedLayout(this);
     _mediaWidget = new MediaWidget(this);
-    _upscaleSelectWidget = new ListSelectWidget(getUpscaleModels(), this);
+    _imageUpscaleSelectWidget = new ListSelectWidget(getImageUpscaleModels(), this);
+    _videoUpscaleSelectWidget = new ListSelectWidget(getVideoUpscaleModels(), this);
     _navigateSelectWidget = new ListSelectWidget({}, this, true);
 
     setCentralWidget(_mainWidget);
@@ -39,11 +40,13 @@ MainWindow::MainWindow(const std::string& target_path)
 
     _mediaLayout->setStackingMode(QStackedLayout::StackAll);
     _mediaLayout->addWidget(_mediaWidget);
-    _mediaLayout->addWidget(_upscaleSelectWidget);
+    _mediaLayout->addWidget(_imageUpscaleSelectWidget);
+    _mediaLayout->addWidget(_videoUpscaleSelectWidget);
     _mediaLayout->addWidget(_navigateSelectWidget);
 
-    _mediaLayout->setCurrentWidget(_upscaleSelectWidget);
-    _upscaleSelectWidget->hide();
+    _mediaLayout->setCurrentWidget(_imageUpscaleSelectWidget);
+    _imageUpscaleSelectWidget->hide();
+    _videoUpscaleSelectWidget->hide();
     _navigateSelectWidget->hide();
 
     std::string targetFile;
@@ -95,12 +98,23 @@ MainWindow::MainWindow(const std::string& target_path)
 
     connect(this, &MainWindow::currentIndexChanged, this, [this] { updateCurrentFileInfo(); });
 
-    connect(_upscaleSelectWidget, &ListSelectWidget::itemsSelected, this, [this](const auto& selected) {
+    connect(_imageUpscaleSelectWidget, &ListSelectWidget::itemsSelected, this, [this](const auto& selected) {
         upscaleImage(_fileList[_currentIndex].path, selected[0]);
-        _upscaleSelectWidget->hide();
+        _imageUpscaleSelectWidget->hide();
     });
 
-    connect(_upscaleSelectWidget, &ListSelectWidget::cancelled, this, [this] { _upscaleSelectWidget->hide(); });
+    connect(_imageUpscaleSelectWidget, &ListSelectWidget::cancelled, this, [this] {
+        _imageUpscaleSelectWidget->hide();
+    });
+
+    connect(_videoUpscaleSelectWidget, &ListSelectWidget::itemsSelected, this, [this](const auto& selected) {
+        upscaleVideo(_fileList[_currentIndex].path, selected[0]);
+        _videoUpscaleSelectWidget->hide();
+    });
+
+    connect(_videoUpscaleSelectWidget, &ListSelectWidget::cancelled, this, [this] {
+        _videoUpscaleSelectWidget->hide();
+    });
 
     connect(_navigateSelectWidget, &ListSelectWidget::itemsSelected, this, [this](const std::vector<std::string>& selected) {
         if (selected.empty())
@@ -525,6 +539,71 @@ void MainWindow::filterVideos()
     _mediaWidget->setMedia(_fileList[_currentIndex].path);
 }
 
+void MainWindow::upscaleVideo(const std::string& path, const std::string& modelStr)
+{
+    _controls_disabled = true;
+
+    std::thread thread([path, modelStr, this] {
+        std::string targetpath = std::format("{}/up2_{}", ien::get_file_directory(path), ien::get_file_name(path));
+        const std::string command = "video2x";
+        if (!ien::exists_in_envpath(command))
+        {
+            _controls_disabled = false;
+            return;
+        }
+
+        const auto extension = ien::str_tolower(ien::get_file_extension(path)).substr(1);
+        if(extension != ".mp4")
+        {
+            targetpath += ".mp4";
+        }
+
+        const auto [actual_model, upscale_factor] = videoUpscaleModelToStringAndFactor(modelStr);
+
+        const std::vector<std::string> args = {
+            "--input",
+            path,
+            "--output",
+            targetpath,
+            "-p",
+            "realesrgan",
+            "--realesrgan-model",
+            actual_model,
+            "-s",
+            std::to_string(upscale_factor)
+        };
+        runCommand(command, args, [this](std::string text) {
+            QMetaObject::invokeMethod(this, [=, this] { _mediaWidget->showMessage(QString::fromStdString(text)); });
+        });
+
+        if (!std::filesystem::exists(targetpath))
+        {
+            _mediaWidget->showMessage("Upscale command failed!");
+            _controls_disabled = false;
+            return;
+        }
+
+        const auto mtime = ien::get_file_mtime(path);
+        QFile::moveToTrash(QString::fromStdString(path));
+
+        std::filesystem::rename(targetpath, path);
+        ien::set_file_mtime(path, mtime);
+
+        QMetaObject::invokeMethod(this, [=, this] {
+            _mediaWidget->showMessage("Finished!");
+            _controls_disabled = false;
+            loadFiles();
+            updateCurrentFileInfo();
+            if (_fileList.size() > _currentIndex)
+            {
+                _mediaWidget->cachedMediaProxy().clear();
+                _mediaWidget->setMedia(_fileList[_currentIndex].path);
+            }
+        });
+    });
+    thread.detach();
+}
+
 void MainWindow::keyPressEvent(QKeyEvent* ev)
 {
     if (_controls_disabled)
@@ -548,9 +627,18 @@ void MainWindow::keyPressEvent(QKeyEvent* ev)
                 return;
             }
 
-            _upscaleSelectWidget->show();
-            _upscaleSelectWidget->setFocus(Qt::FocusReason::MouseFocusReason);
-            _mediaLayout->setCurrentWidget(_upscaleSelectWidget);
+            if (_mediaWidget->currentMediaType() == CurrentMediaType::Image)
+            {
+                _imageUpscaleSelectWidget->show();
+                _imageUpscaleSelectWidget->setFocus(Qt::FocusReason::MouseFocusReason);
+                _mediaLayout->setCurrentWidget(_imageUpscaleSelectWidget);
+            }
+            else
+            {
+                _videoUpscaleSelectWidget->show();
+                _videoUpscaleSelectWidget->setFocus(Qt::FocusReason::MouseFocusReason);
+                _mediaLayout->setCurrentWidget(_videoUpscaleSelectWidget);
+            }
         }
         else if (key == Qt::Key_Minus)
         {

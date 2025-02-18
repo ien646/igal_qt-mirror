@@ -11,6 +11,7 @@
 
 #include <cstdio>
 #include <filesystem>
+#include <ranges>
 #include <span>
 #include <sstream>
 #include <unordered_set>
@@ -68,7 +69,7 @@ bool isAnimation(const std::string& path, bool shallow)
     const std::string extension = ien::str_tolower(ien::get_file_extension(path));
     if (ANIMATION_EXTENSIONS.count(extension))
     {
-        if(shallow)
+        if (shallow)
         {
             return false;
         }
@@ -136,12 +137,32 @@ std::unordered_map<int, std::string> getLinksFromFile(const std::string& path)
     return result;
 }
 
-std::vector<std::string> getUpscaleModels()
+std::vector<std::string> getImageUpscaleModels()
 {
     static const std::vector<std::string>
         MODELS = { "realesrgan-x4plus-anime", "realesr-animevideov3", "realesrgan-x4plus", "realesrnet-x4plus" };
 
     return MODELS;
+}
+
+const std::map<std::string, std::pair<std::string, unsigned int>> VIDEO_UPSCALE_MODEL_MAP = {
+    { "(x2) realesr-animevideov3", { "realesr-animevideov3", 2 } },
+    { "(x2) realesrgan-plus-anime", { "realesrgan-plus-anime", 2 } },
+    { "(x2) realesrgan-plus", { "realesrgan-plus", 2 } },
+    { "(x4) realesr-animevideov3", { "realesr-animevideov3", 4 } },
+    { "(x4) realesrgan-plus-anime", { "realesrgan-plus-anime", 4 } },
+    { "(x4) realesrgan-plus", { "realesrgan-plus", 4 } }
+};
+
+std::vector<std::string> getVideoUpscaleModels()
+{
+    const auto& keys = std::views::keys(VIDEO_UPSCALE_MODEL_MAP);
+    return { keys.begin(), keys.end() };
+}
+
+std::pair<std::string, unsigned int> videoUpscaleModelToStringAndFactor(const std::string& str)
+{
+    return VIDEO_UPSCALE_MODEL_MAP.at(str);
 }
 
 CopyFileToLinkDirResult copyFileToLinkDir(const std::string& file, const std::string& linkDir)
@@ -248,9 +269,9 @@ void runCommand(const std::string& command, const std::vector<std::string>& args
 
 void disableFocusOnChildWidgets(QWidget* widget)
 {
-    for(auto& child : widget->children())
+    for (auto& child : widget->children())
     {
-        if(auto* widget = dynamic_cast<QWidget*>(child))
+        if (auto* widget = dynamic_cast<QWidget*>(child))
         {
             widget->setFocusPolicy(Qt::FocusPolicy::NoFocus);
         }

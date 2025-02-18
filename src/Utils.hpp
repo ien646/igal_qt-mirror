@@ -16,7 +16,9 @@ bool isImage(const std::string& path);
 bool isAnimation(const std::string& path, bool shallow = false);
 bool isVideo(const std::string& path);
 std::unordered_map<int, std::string> getLinksFromFile(const std::string& path);
-std::vector<std::string> getUpscaleModels();
+std::vector<std::string> getImageUpscaleModels();
+std::vector<std::string> getVideoUpscaleModels();
+std::pair<std::string, unsigned int> videoUpscaleModelToStringAndFactor(const std::string& str);
 
 enum class CopyFileToLinkDirResult
 {

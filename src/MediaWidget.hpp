@@ -54,6 +54,8 @@ public:
 
     void increaseVideoSpeed(float amount);
 
+    CurrentMediaType currentMediaType() const { return _currentMediaType; }
+
 private:
     std::string _target;
     bool _isVideo;
@@ -61,7 +63,7 @@ private:
 
     QStackedLayout* _mainLayout = nullptr;
 
-    CurrentMediaType _currentMedia;
+    CurrentMediaType _currentMediaType;
 
     CachedMediaProxy _cachedMediaProxy;
     std::shared_ptr<QImage> _image;

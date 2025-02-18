@@ -45,7 +45,8 @@ private:
     QWidget* _mainWidget = nullptr;
     QStackedLayout* _mediaLayout = nullptr;
     MediaWidget* _mediaWidget = nullptr;
-    ListSelectWidget* _upscaleSelectWidget = nullptr;
+    ListSelectWidget* _imageUpscaleSelectWidget = nullptr;
+    ListSelectWidget* _videoUpscaleSelectWidget = nullptr;
     ListSelectWidget* _navigateSelectWidget = nullptr;
     HelpOverlay* _helpOverlay = nullptr;
     PreviewStrip* _previewStrip = nullptr;
@@ -76,4 +77,5 @@ private:
     void handleNumpadInput(int key);
     void handleStandardInput(int key);
     void filterVideos();
+    void upscaleVideo(const std::string& path, const std::string& model);
 };
