@@ -148,7 +148,6 @@ std::vector<std::string> getImageUpscaleModels()
 const std::map<std::string, std::pair<std::string, unsigned int>> VIDEO_UPSCALE_MODEL_MAP = {
     { "(x2) realesr-animevideov3", { "realesr-animevideov3", 2 } },
     { "(x2) realesrgan-plus-anime", { "realesrgan-plus-anime", 2 } },
-    { "(x2) realesrgan-plus", { "realesrgan-plus", 2 } },
     { "(x4) realesr-animevideov3", { "realesr-animevideov3", 4 } },
     { "(x4) realesrgan-plus-anime", { "realesrgan-plus-anime", 4 } },
     { "(x4) realesrgan-plus", { "realesrgan-plus", 4 } }
@@ -265,6 +264,7 @@ void runCommand(const std::string& command, const std::vector<std::string>& args
             messageCallback(message.toStdString());
         }
     }
+    proc.exitStatus();
 }
 
 void disableFocusOnChildWidgets(QWidget* widget)
