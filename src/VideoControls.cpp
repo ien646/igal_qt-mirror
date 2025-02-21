@@ -68,7 +68,7 @@ VideoControls::VideoControls(QWidget* parent)
 
     connect(_volume_slider, &ClickableSlider::sliderMoved, this, [this](int pos) {
         pos = std::max(pos, 0);
-        const auto position = static_cast<float>(pos) / _volume_slider->maximum();
+        const auto position = std::min<float>(static_cast<float>(pos) / _volume_slider->maximum(), 1.0F);
         emit volumeChanged(position * 100);
         _volume_label->setText(QString::fromStdString(std::format("Volume: {}%", static_cast<int>(position * 100))));
         emit volumeSliderMoved();
@@ -184,11 +184,11 @@ void VideoControls::updateButtonStyles()
     const auto
         play_stylesheet = _play_label->underMouse() ? (_clicking ? active_stylesheet : hover_stylesheet) : standard_stylesheet;
 
-    if(_pause_label->styleSheet() != pause_stylesheet)
+    if (_pause_label->styleSheet() != pause_stylesheet)
     {
         _pause_label->setStyleSheet(pause_stylesheet);
     }
-    if(_play_label->styleSheet() != play_stylesheet)
+    if (_play_label->styleSheet() != play_stylesheet)
     {
         _play_label->setStyleSheet(play_stylesheet);
     }
