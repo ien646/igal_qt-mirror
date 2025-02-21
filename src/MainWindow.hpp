@@ -17,6 +17,13 @@ struct FileEntry
     bool operator==(const FileEntry& rhs) const { return path == rhs.path && mtime && rhs.mtime; }
 };
 
+enum class GalleryMode
+{
+    STANDARD,
+    MULTI,
+    MARKED
+};
+
 class HelpOverlay;
 class PreviewStrip;
 
@@ -53,8 +60,9 @@ private:
     bool _controls_disabled = false;
     float _currentZoom = 1.0f;
     QPointF _currentTranslation = { 0.0f, 0.0f };
-    bool _multiMode = false;
+    GalleryMode _currentMode = GalleryMode::STANDARD;
     bool _videoFilter = false;
+    std::unordered_set<size_t> _markedFiles;
 
     void loadFiles();
     void loadFilesMulti(const std::vector<std::string>& abs_directories);
@@ -78,4 +86,6 @@ private:
     void handleStandardInput(int key);
     void filterVideos();
     void upscaleVideo(const std::string& path, const std::string& model);
+    void toggleMarkCurrentFile();
+    void filterMarkedFiles();
 };

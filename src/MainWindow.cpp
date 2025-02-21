@@ -385,6 +385,9 @@ void MainWindow::handleNumpadInput(int key)
     case Qt::Key_0:
         _mediaWidget->resetTransform();
         break;
+    case Qt::Key_Period:
+        toggleMarkCurrentFile();
+        break;
     }
 }
 
@@ -487,6 +490,10 @@ void MainWindow::handleStandardInput(int key)
 
             emit currentIndexChanged(_currentIndex);
         }
+        break;
+    case Qt::Key_Period:
+        toggleMarkCurrentFile();
+        break;
     }
 }
 
@@ -553,7 +560,7 @@ void MainWindow::upscaleVideo(const std::string& path, const std::string& modelS
         }
 
         const auto extension = ien::str_tolower(ien::get_file_extension(path)).substr(1);
-        if(extension != ".mp4")
+        if (extension != ".mp4")
         {
             targetpath += ".mp4";
         }
@@ -604,6 +611,45 @@ void MainWindow::upscaleVideo(const std::string& path, const std::string& modelS
     thread.detach();
 }
 
+void MainWindow::toggleMarkCurrentFile()
+{
+    if (auto found_it = std::ranges::find(_markedFiles, _currentIndex); found_it != _markedFiles.end())
+    {
+        _markedFiles.erase(found_it);
+        _mediaWidget->showMessage(QString::fromStdString(std::format("Unmarked file: {}", _currentIndex)));
+    }
+    else
+    {
+        _markedFiles.emplace(_currentIndex);
+        _mediaWidget->showMessage(QString::fromStdString(std::format("Marked file: {}", _currentIndex)));
+    }
+}
+
+void MainWindow::filterMarkedFiles()
+{
+    if(_markedFiles.empty())
+    {
+        _mediaWidget->showMessage("No marked files");
+        return;
+    }
+
+    std::vector<FileEntry> markedEntries;
+    for (const auto& index : _markedFiles)
+    {
+        markedEntries.push_back(std::move(_fileList[index]));
+    }
+    std::ranges::sort(markedEntries, [](const FileEntry& lhs, const FileEntry& rhs) { return lhs.mtime > rhs.mtime; });
+
+    _fileList = std::move(markedEntries);
+    _currentIndex = 0;
+
+    _mediaWidget->cachedMediaProxy().clear();
+    _mediaWidget->setMedia(_fileList[_currentIndex].path);
+    _mediaWidget->showMessage("Switched to marked-mode");
+
+    _currentMode = GalleryMode::MARKED;
+}
+
 void MainWindow::keyPressEvent(QKeyEvent* ev)
 {
     if (_controls_disabled)
@@ -621,9 +667,14 @@ void MainWindow::keyPressEvent(QKeyEvent* ev)
     {
         if (key == Qt::Key_Plus)
         {
-            if (_multiMode)
+            if (_currentMode == GalleryMode::MULTI)
             {
                 _mediaWidget->showMessage("Upscaling not available in multi-mode");
+                return;
+            }
+            if (_currentMode == GalleryMode::MARKED)
+            {
+                _mediaWidget->showMessage("Upscaling not available in marked-mode");
                 return;
             }
 
@@ -672,6 +723,20 @@ void MainWindow::keyPressEvent(QKeyEvent* ev)
             _mediaWidget->increaseVideoSpeed(-0.05f);
         }
     }
+    else if (ctrl)
+    {
+        if (key == Qt::Key_Period)
+        {
+            if (_currentMode != GalleryMode::MARKED)
+            {
+                filterMarkedFiles();
+            }
+            else
+            {
+                loadFiles();
+            }
+        }
+    }
     else if (numpad)
     {
         handleNumpadInput(key);
@@ -705,7 +770,9 @@ void MainWindow::loadFiles()
         return lhs.mtime > rhs.mtime;
     });
 
-    _multiMode = false;
+    _currentMode = GalleryMode::STANDARD;
+
+    _mediaWidget->showMessage(QString::fromStdString(std::format("Loaded {} files", _fileList.size())));
 }
 
 void MainWindow::loadFilesMulti(const std::vector<std::string>& abs_directories)
@@ -763,7 +830,7 @@ void MainWindow::loadFilesMulti(const std::vector<std::string>& abs_directories)
     _fileList.erase(std::unique(_fileList.begin(), _fileList.end()), _fileList.end());
 
     _mediaWidget->showMessage("Entering multi-mode");
-    _multiMode = true;
+    _currentMode = GalleryMode::MULTI;
 
     _currentIndex = 0;
     emit currentIndexChanged(_currentIndex);
