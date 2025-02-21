@@ -391,6 +391,31 @@ void MainWindow::handleNumpadInput(int key)
     }
 }
 
+void MainWindow::handleCtrlInput(int key)
+{
+    switch (key)
+    {
+    case Qt::Key_Period:
+        if (_currentMode != GalleryMode::MARKED)
+        {
+            filterMarkedFiles();
+        }
+        else
+        {
+            loadFiles();
+        }
+        break;
+
+    case Qt::Key_Up:
+        _mediaWidget->increaseVideoVolume(0.05F);
+        break;
+
+    case Qt::Key_Down:
+        _mediaWidget->increaseVideoVolume(-0.05F);
+        break;
+    }
+}
+
 void MainWindow::handleStandardInput(int key)
 {
     switch (key)
@@ -627,7 +652,7 @@ void MainWindow::toggleMarkCurrentFile()
 
 void MainWindow::filterMarkedFiles()
 {
-    if(_markedFiles.empty())
+    if (_markedFiles.empty())
     {
         _mediaWidget->showMessage("No marked files");
         return;
@@ -725,17 +750,7 @@ void MainWindow::keyPressEvent(QKeyEvent* ev)
     }
     else if (ctrl)
     {
-        if (key == Qt::Key_Period)
-        {
-            if (_currentMode != GalleryMode::MARKED)
-            {
-                filterMarkedFiles();
-            }
-            else
-            {
-                loadFiles();
-            }
-        }
+        handleCtrlInput(key);
     }
     else if (numpad)
     {

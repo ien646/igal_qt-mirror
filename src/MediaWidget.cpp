@@ -293,6 +293,15 @@ void MediaWidget::increaseVideoSpeed(float amount)
     }
 }
 
+void MediaWidget::increaseVideoVolume(float amount)
+{
+    if (_currentMediaType == CurrentMediaType::Video)
+    {
+        auto* output = _videoPlayer->audioOutput();
+        output->setVolume(output->volume() + amount);
+    }
+}
+
 void MediaWidget::connectAnimationSignals()
 {
     connect(_animation.get(), &QMovie::frameChanged, this, [this](int frame) {

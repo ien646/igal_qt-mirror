@@ -53,6 +53,7 @@ public:
     void resetTransform();
 
     void increaseVideoSpeed(float amount);
+    void increaseVideoVolume(float amount);
 
     CurrentMediaType currentMediaType() const { return _currentMediaType; }
 

@@ -140,6 +140,7 @@ void VideoControls::setCurrentVideoPosition(int64_t posMs)
 void VideoControls::setCurrentVolume(int percent)
 {
     _volume_slider->setSliderPosition(percent);
+    _volume_label->setText(QString::fromStdString(std::format("Volume: {}%", percent)));
 }
 
 void VideoControls::setAudioChannelInfo(const std::map<int, std::string>& channelInfo)

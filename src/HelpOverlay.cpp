@@ -8,8 +8,8 @@
 #include "Utils.hpp"
 
 const std::vector<std::string> CONTROLS_LINES = {
-    "<b>Left arrow</b>: Previous item",
-    "<b>Right arrow</b>: Next item",
+    "<b>Arrow-Left</b>: Previous item",
+    "<b>Arrow-Right</b>: Next item",
     "<b>PgUp</b>: Skip 10 items back",
     "<b>PgDown</b>: Skip 10 items forward",
     "<b>Home</b>: Skip to first item",
@@ -28,11 +28,13 @@ const std::vector<std::string> CONTROLS_LINES = {
     "<b>Num[2]</b>: Move left (image/animation)",
     "<b>Num[0]</b>: Reset transform (image/animation)",
     "<b>Ctrl+.</b>: Toggle marked-mode",
-    "<b>Ctrl+Shift+Num[+]</b>: Open upscale dialog",
-    "<b>Ctrl+Shift+Num[-]</b>: Filter videos",
+    "<b>Ctrl+Arrow-Up</b>: Volume up",
+    "<b>Ctrl+Arrow-Down</b>: Volume down",
+    "<b>Ctrl+Shift+Numpad[+]</b>: Open upscale dialog",
+    "<b>Ctrl+Shift+Numpad[-]</b>: Filter videos",
     "<b>Ctrl+Shift+{Key}</b>: Copy to link directory",
     "<b>Shift+Return</b>: Open linked directory navigator",
-    "<b>Shift+Up</b>: Change video/animation speed (+5%)",
+    "<b>Shift+Arrow-Up</b>: Change video/animation speed (+5%)",
     "<b>Shift+Down</b>: Change video/animation speed (-5%)"
 };
 

@@ -84,6 +84,7 @@ private:
     void openNavigationDialog();
     void handleNumpadInput(int key);
     void handleStandardInput(int key);
+    void handleCtrlInput(int key);
     void filterVideos();
     void upscaleVideo(const std::string& path, const std::string& model);
     void toggleMarkCurrentFile();
