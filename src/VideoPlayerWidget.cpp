@@ -34,11 +34,6 @@ VideoPlayerWidget::VideoPlayerWidget(QWidget* parent)
     _scene_rect = _scene->addRect(QRect(QPoint(0, 0), size() * devicePixelRatio()));
     _scene_rect->setPen(Qt::NoPen);
 
-    _video_item = new QGraphicsVideoItem(_scene_rect);
-    _video_item->setAspectRatioMode(Qt::AspectRatioMode::KeepAspectRatio);
-    _video_item->setSize(size() * devicePixelRatio());
-    //_scene->addItem(_video_item);
-
     _autoHideTimer->setSingleShot(true);
     _autoHideTimer->setInterval(2500);
     _autoHideTimer->start();
@@ -46,106 +41,164 @@ VideoPlayerWidget::VideoPlayerWidget(QWidget* parent)
     disableFocusOnChildWidgets(this);
 
     _media_player = new QMediaPlayer(this);
-    _media_player->setVideoOutput(_video_item);
     _media_player->setLoops(QMediaPlayer::Infinite);
 
     setupConnections();
 
     // Delay initialization of audio output
-    QTimer::singleShot(100, [this] {
-        _audio_output = new QAudioOutput(this);
-        _audio_output->setVolume(0.5f);
-        _media_player->setAudioOutput(_audio_output);
-        connect(_audio_output, &QAudioOutput::volumeChanged, this, [this](float volume) {
-            _video_controls->setCurrentVolume(volume * 100);
+    QTimer::singleShot(
+        250,
+        [this] {
+            _audio_output = new QAudioOutput(this);
+            _audio_output->setVolume(0.5f);
+            _media_player->setAudioOutput(_audio_output);
+            connect(
+                _audio_output,
+                &QAudioOutput::volumeChanged,
+                this,
+                [this](float volume) {
+                    _video_controls->setCurrentVolume(volume * 100);
+                });
+
+            _video_item = new QGraphicsVideoItem(_scene_rect);
+            _video_item->setAspectRatioMode(Qt::AspectRatioMode::KeepAspectRatio);
+            _video_item->setSize(size() * devicePixelRatio());
+            _media_player->setVideoOutput(_video_item);
         });
-    });
 }
 
 void VideoPlayerWidget::setupConnections()
 {
-    connect(_video_controls, &VideoControls::playClicked, this, [this] {
-        _media_player->play();
-        _autoHideTimer->start();
-    });
+    connect(
+        _video_controls,
+        &VideoControls::playClicked,
+        this,
+        [this] {
+            _media_player->play();
+            _autoHideTimer->start();
+        });
 
-    connect(_video_controls, &VideoControls::pauseClicked, this, [this] {
-        _media_player->pause();
-        _autoHideTimer->stop();
-    });
+    connect(
+        _video_controls,
+        &VideoControls::pauseClicked,
+        this,
+        [this] {
+            _media_player->pause();
+            _autoHideTimer->stop();
+        });
 
-    connect(_video_controls, &VideoControls::videoPositionChanged, this, [this](float pos) {
-        _media_player->setPosition(static_cast<float>(_media_player->duration()) * pos);
-    });
+    connect(
+        _video_controls,
+        &VideoControls::videoPositionChanged,
+        this,
+        [this](float pos) {
+            _media_player->setPosition(static_cast<float>(_media_player->duration()) * pos);
+        });
 
-    connect(_video_controls, &VideoControls::seekSliderClicked, this, [this] {
-        _clicked = true;
-        _was_playing_before_seek_click = _media_player->isPlaying();
-        _media_player->pause();
-        _autoHideTimer->stop();
-    });
+    connect(
+        _video_controls,
+        &VideoControls::seekSliderClicked,
+        this,
+        [this] {
+            _clicked = true;
+            _was_playing_before_seek_click = _media_player->isPlaying();
+            _media_player->pause();
+            _autoHideTimer->stop();
+        });
 
     connect(_video_controls, &VideoControls::seekSliderMoved, this, [this] { _autoHideTimer->stop(); });
 
-    connect(_video_controls, &VideoControls::seekSliderReleased, this, [this] {
-        _clicked = false;
-        if (_was_playing_before_seek_click)
-        {
-            _media_player->play();
-        }
-        _autoHideTimer->start();
-    });
+    connect(
+        _video_controls,
+        &VideoControls::seekSliderReleased,
+        this,
+        [this] {
+            _clicked = false;
+            if (_was_playing_before_seek_click)
+            {
+                _media_player->play();
+            }
+            _autoHideTimer->start();
+        });
 
-    connect(_video_controls, &VideoControls::volumeSliderClicked, this, [this] {
-        _autoHideTimer->stop();
-        _clicked = true;
-    });
+    connect(
+        _video_controls,
+        &VideoControls::volumeSliderClicked,
+        this,
+        [this] {
+            _autoHideTimer->stop();
+            _clicked = true;
+        });
 
     connect(_video_controls, &VideoControls::volumeSliderMoved, this, [this] { _autoHideTimer->stop(); });
 
-    connect(_video_controls, &VideoControls::volumeSliderReleased, this, [this] {
-        _autoHideTimer->start();
-        _clicked = false;
-    });
+    connect(
+        _video_controls,
+        &VideoControls::volumeSliderReleased,
+        this,
+        [this] {
+            _autoHideTimer->start();
+            _clicked = false;
+        });
 
-    connect(_video_controls, &VideoControls::volumeChanged, this, [this](int volume) {
-        if (_audio_output)
-        {
-            _audio_output->setVolume(static_cast<float>(volume) / 100);
-        }
-    });
+    connect(
+        _video_controls,
+        &VideoControls::volumeChanged,
+        this,
+        [this](int volume) {
+            if (_audio_output)
+            {
+                _audio_output->setVolume(static_cast<float>(volume) / 100);
+            }
+        });
 
-    connect(_video_controls, &VideoControls::audioChannelChanged, this, [this](int index) {
-        _media_player->setActiveAudioTrack(index);
-    });
+    connect(
+        _video_controls,
+        &VideoControls::audioChannelChanged,
+        this,
+        [this](int index) {
+            _media_player->setActiveAudioTrack(index);
+        });
 
-    connect(_media_player, &QMediaPlayer::positionChanged, _video_controls, [&](qint64 pos) {
-        if (_media_player->isPlaying())
-        {
-            _video_controls->setCurrentVideoDuration(_media_player->duration());
-            _video_controls->setCurrentVideoPosition(pos);
-        }
-    });
+    connect(
+        _media_player,
+        &QMediaPlayer::positionChanged,
+        _video_controls,
+        [&](qint64 pos) {
+            if (_media_player->isPlaying())
+            {
+                _video_controls->setCurrentVideoDuration(_media_player->duration());
+                _video_controls->setCurrentVideoPosition(pos);
+            }
+        });
 
-    connect(_autoHideTimer, &QTimer::timeout, this, [this] {
-        if (_media_player->isPlaying())
-        {
-            _video_controls->hide();
-        }
-    });
+    connect(
+        _autoHideTimer,
+        &QTimer::timeout,
+        this,
+        [this] {
+            if (_media_player->isPlaying())
+            {
+                _video_controls->hide();
+            }
+        });
 
-    connect(_media_player, &QMediaPlayer::tracksChanged, this, [this] {
-        std::map<int, std::string> channelInfo;
-        for (size_t i = 0; i < _media_player->audioTracks().size(); ++i)
-        {
-            auto track = _media_player->audioTracks().at(i);
-            const auto language = track[QMediaMetaData::Language].toString();
-            const auto trackNum = i;
-            channelInfo.emplace(trackNum, language.toStdString());
-        }
+    connect(
+        _media_player,
+        &QMediaPlayer::tracksChanged,
+        this,
+        [this] {
+            std::map<int, std::string> channelInfo;
+            for (size_t i = 0; i < _media_player->audioTracks().size(); ++i)
+            {
+                auto track = _media_player->audioTracks().at(i);
+                const auto language = track[QMediaMetaData::Language].toString();
+                const auto trackNum = i;
+                channelInfo.emplace(trackNum, language.toStdString());
+            }
 
-        _video_controls->setAudioChannelInfo(channelInfo);
-    });
+            _video_controls->setAudioChannelInfo(channelInfo);
+        });
 }
 
 void VideoPlayerWidget::setMedia(const std::string& src)
@@ -169,7 +222,10 @@ void VideoPlayerWidget::resizeEvent(QResizeEvent* ev)
     setGeometry(scaledRect);
     _scene->setSceneRect(scaledRect);
     _scene_rect->setRect(scaledRect);
-    _video_item->setSize(ev->size());
+    if (_video_item)
+    {
+        _video_item->setSize(ev->size());
+    }
 
     _video_controls->setFixedSize(ev->size());
     _video_controls->setMinimumSize(600, 24);
