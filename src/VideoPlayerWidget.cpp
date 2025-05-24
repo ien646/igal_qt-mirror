@@ -22,8 +22,6 @@ VideoPlayerWidget::VideoPlayerWidget(QWidget* parent)
 
     _main_layout = new QStackedLayout(this);
     _video_controls = new VideoControls(this);
-    _media_player = new QMediaPlayer(this);
-    _audio_output = new QAudioOutput(this);
     _scene = new QGraphicsScene(this);
     _autoHideTimer = new QTimer(this);
 
@@ -33,37 +31,46 @@ VideoPlayerWidget::VideoPlayerWidget(QWidget* parent)
     _video_controls->setMinimumSize(600, 24);
     _video_controls->setMouseTracking(true);
 
-    _audio_output->setVolume(0.5f);
-
     _scene_rect = _scene->addRect(QRect(QPoint(0, 0), size() * devicePixelRatio()));
     _scene_rect->setPen(Qt::NoPen);
 
     _video_item = new QGraphicsVideoItem(_scene_rect);
     _video_item->setAspectRatioMode(Qt::AspectRatioMode::KeepAspectRatio);
     _video_item->setSize(size() * devicePixelRatio());
-    _scene->addItem(_video_item);
-
-    _media_player->setVideoOutput(_video_item);
-    _media_player->setLoops(QMediaPlayer::Infinite);
-    _media_player->setAudioOutput(_audio_output);
+    //_scene->addItem(_video_item);
 
     _autoHideTimer->setSingleShot(true);
     _autoHideTimer->setInterval(2500);
     _autoHideTimer->start();
 
-    setupConnections();
     disableFocusOnChildWidgets(this);
+
+    _media_player = new QMediaPlayer(this);
+    _media_player->setVideoOutput(_video_item);
+    _media_player->setLoops(QMediaPlayer::Infinite);
+
+    setupConnections();
+
+    // Delay initialization of audio output
+    QTimer::singleShot(100, [this] {
+        _audio_output = new QAudioOutput(this);
+        _audio_output->setVolume(0.5f);
+        _media_player->setAudioOutput(_audio_output);
+        connect(_audio_output, &QAudioOutput::volumeChanged, this, [this](float volume) {
+            _video_controls->setCurrentVolume(volume * 100);
+        });
+    });
 }
 
 void VideoPlayerWidget::setupConnections()
 {
-    connect(_video_controls, &VideoControls::playClicked, this, [this] { 
-        _media_player->play(); 
+    connect(_video_controls, &VideoControls::playClicked, this, [this] {
+        _media_player->play();
         _autoHideTimer->start();
     });
 
-    connect(_video_controls, &VideoControls::pauseClicked, this, [this] { 
-        _media_player->pause(); 
+    connect(_video_controls, &VideoControls::pauseClicked, this, [this] {
+        _media_player->pause();
         _autoHideTimer->stop();
     });
 
@@ -78,9 +85,7 @@ void VideoPlayerWidget::setupConnections()
         _autoHideTimer->stop();
     });
 
-    connect(_video_controls, &VideoControls::seekSliderMoved, this, [this] {
-        _autoHideTimer->stop();
-    });
+    connect(_video_controls, &VideoControls::seekSliderMoved, this, [this] { _autoHideTimer->stop(); });
 
     connect(_video_controls, &VideoControls::seekSliderReleased, this, [this] {
         _clicked = false;
@@ -96,9 +101,7 @@ void VideoPlayerWidget::setupConnections()
         _clicked = true;
     });
 
-    connect(_video_controls, &VideoControls::volumeSliderMoved, this, [this] {
-        _autoHideTimer->stop();
-    });
+    connect(_video_controls, &VideoControls::volumeSliderMoved, this, [this] { _autoHideTimer->stop(); });
 
     connect(_video_controls, &VideoControls::volumeSliderReleased, this, [this] {
         _autoHideTimer->start();
@@ -106,7 +109,10 @@ void VideoPlayerWidget::setupConnections()
     });
 
     connect(_video_controls, &VideoControls::volumeChanged, this, [this](int volume) {
-        _audio_output->setVolume(static_cast<float>(volume) / 100);
+        if (_audio_output)
+        {
+            _audio_output->setVolume(static_cast<float>(volume) / 100);
+        }
     });
 
     connect(_video_controls, &VideoControls::audioChannelChanged, this, [this](int index) {
@@ -119,10 +125,6 @@ void VideoPlayerWidget::setupConnections()
             _video_controls->setCurrentVideoDuration(_media_player->duration());
             _video_controls->setCurrentVideoPosition(pos);
         }
-    });
-
-    connect(_audio_output, &QAudioOutput::volumeChanged, this, [this](float volume) {
-        _video_controls->setCurrentVolume(volume * 100);
     });
 
     connect(_autoHideTimer, &QTimer::timeout, this, [this] {
