@@ -576,7 +576,8 @@ void MainWindow::upscaleVideo(const std::string& path, const std::string& modelS
     _controls_disabled = true;
 
     std::thread thread([path, modelStr, this] {
-        std::string targetpath = std::format("{}/up2_{}", ien::get_file_directory(path), ien::get_file_name(path));
+        std::string out_path = path;
+        std::string target_path = std::format("{}/up2_{}", ien::get_file_directory(path), ien::get_file_name(path));
         const std::string command = "video2x";
         if (!ien::exists_in_envpath(command))
         {
@@ -587,7 +588,8 @@ void MainWindow::upscaleVideo(const std::string& path, const std::string& modelS
         const auto extension = ien::str_tolower(ien::get_file_extension(path)).substr(1);
         if (extension != ".mp4")
         {
-            targetpath += ".mp4";
+            target_path += ".mp4";
+            out_path += ".mp4";
         }
 
         const auto [actual_model, upscale_factor] = videoUpscaleModelToStringAndFactor(modelStr);
@@ -596,7 +598,7 @@ void MainWindow::upscaleVideo(const std::string& path, const std::string& modelS
             "--input",
             path,
             "--output",
-            targetpath,
+            target_path,
             "-p",
             "realesrgan",
             "--realesrgan-model",
@@ -608,7 +610,7 @@ void MainWindow::upscaleVideo(const std::string& path, const std::string& modelS
             QMetaObject::invokeMethod(this, [=, this] { _mediaWidget->showMessage(QString::fromStdString(text)); });
         });
 
-        if (!std::filesystem::exists(targetpath) || std::filesystem::file_size(targetpath) < 1024)
+        if (!std::filesystem::exists(target_path) || std::filesystem::file_size(target_path) < 1024)
         {
             _mediaWidget->showMessage("Upscale command failed!");
             _controls_disabled = false;
@@ -618,8 +620,8 @@ void MainWindow::upscaleVideo(const std::string& path, const std::string& modelS
         const auto mtime = ien::get_file_mtime(path);
         QFile::moveToTrash(QString::fromStdString(path));
 
-        std::filesystem::rename(targetpath, path);
-        ien::set_file_mtime(path, mtime);
+        std::filesystem::rename(target_path, out_path);
+        ien::set_file_mtime(out_path, mtime);
 
         QMetaObject::invokeMethod(this, [=, this] {
             _mediaWidget->showMessage("Finished!");
@@ -629,7 +631,8 @@ void MainWindow::upscaleVideo(const std::string& path, const std::string& modelS
             if (_fileList.size() > _currentIndex)
             {
                 _mediaWidget->cachedMediaProxy().clear();
-                _mediaWidget->setMedia(_fileList[_currentIndex].path);
+                _fileList[_currentIndex].path = out_path;
+                _mediaWidget->setMedia(out_path);
             }
         });
     });
