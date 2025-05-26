@@ -9,6 +9,8 @@
 
 #include "Utils.hpp"
 
+#include <QApplication>
+
 MediaWidget::MediaWidget(QWidget* parent)
     : QWidget(parent)
     , _cachedMediaProxy(1024)
@@ -22,11 +24,9 @@ MediaWidget::MediaWidget(QWidget* parent)
     setLayout(_mainLayout);
 
     _imageLabel = new QLabel(this);
-    _videoPlayer = new VideoPlayerWidget(this);
     _infoOverlay = new InfoOverlayWidget(this);
 
     _mainLayout->addWidget(_imageLabel);
-    _mainLayout->addWidget(_videoPlayer);
     _mainLayout->addWidget(_infoOverlay);
 
     _imageLabel->setAlignment(Qt::AlignVCenter | Qt::AlignHCenter);
@@ -35,10 +35,9 @@ MediaWidget::MediaWidget(QWidget* parent)
     _imageLabel->setScaledContents(true);
     _imageLabel->hide();
 
-    _videoPlayer->setMinimumSize(600, 400);
-    _videoPlayer->hide();
-
     _mainLayout->setCurrentWidget(_infoOverlay);
+
+    QTimer::singleShot(1000, [this] { initVideoPlayer(); });
 }
 
 void MediaWidget::setMedia(const std::string& source)
@@ -46,8 +45,12 @@ void MediaWidget::setMedia(const std::string& source)
     qDebug() << "Loading media: " << source;
     _target = source;
 
-    _videoPlayer->hide();
-    _videoPlayer->mediaPlayer()->stop();
+    if (_videoPlayer)
+    {
+        _videoPlayer->hide();
+        _videoPlayer->mediaPlayer()->stop();
+    }
+
     _imageLabel->hide();
     if (_animation)
     {
@@ -57,6 +60,11 @@ void MediaWidget::setMedia(const std::string& source)
     if (isVideo(_target))
     {
         _currentMediaType = CurrentMediaType::Video;
+
+        if (!_videoPlayer)
+        {
+            initVideoPlayer();
+        }
         _videoPlayer->setMedia(source);
         _videoPlayer->show();
     }
@@ -117,6 +125,11 @@ void MediaWidget::hideInfo()
 
 void MediaWidget::toggleMute()
 {
+    if (!_videoPlayer)
+    {
+        return;
+    }
+
     QAudioOutput* audioOutput = _videoPlayer->audioOutput();
 
     if (!audioOutput->isMuted())
@@ -134,6 +147,11 @@ void MediaWidget::toggleMute()
 
 void MediaWidget::togglePlayPauseVideo()
 {
+    if (!_videoPlayer)
+    {
+        return;
+    }
+
     if (_currentMediaType == CurrentMediaType::Video)
     {
         if (_videoPlayer->mediaPlayer()->isPlaying())
@@ -182,7 +200,7 @@ void MediaWidget::resizeEvent(QResizeEvent* ev)
         syncAnimationSize();
         _imageLabel->setMinimumSize(600, 400);
     }
-    else if (_currentMediaType == CurrentMediaType::Video)
+    else if (_currentMediaType == CurrentMediaType::Video && _videoPlayer)
     {
         _videoPlayer->setMinimumSize(1, 1);
     }
@@ -279,7 +297,7 @@ void MediaWidget::resetTransform()
 
 void MediaWidget::increaseVideoSpeed(float amount)
 {
-    if (_currentMediaType == CurrentMediaType::Video)
+    if (_currentMediaType == CurrentMediaType::Video && _videoPlayer)
     {
         const auto rate = std::max(0.0, _videoPlayer->mediaPlayer()->playbackRate() + amount);
         _videoPlayer->mediaPlayer()->setPlaybackRate(rate);
@@ -308,4 +326,17 @@ void MediaWidget::connectAnimationSignals()
         _image = std::make_shared<QImage>(_animation->currentImage());
         updateTransform();
     });
+}
+
+void MediaWidget::initVideoPlayer()
+{
+    if (_videoPlayer)
+    {
+        return;
+    }
+    _videoPlayer = new VideoPlayerWidget(this);
+    _videoPlayer->setMinimumSize(600, 400);
+    _videoPlayer->hide();
+
+    _mainLayout->addWidget(_videoPlayer);
 }

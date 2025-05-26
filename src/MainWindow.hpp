@@ -32,7 +32,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(const std::string& target_path);
+    explicit MainWindow(const std::string& target_path);
 
 protected:
     void keyPressEvent(QKeyEvent* ev) override;

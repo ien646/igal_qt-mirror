@@ -59,12 +59,12 @@ public:
 
 private:
     std::string _target;
-    bool _isVideo;
-    float _volumeBeforeMute;
+    bool _isVideo = false;
+    float _volumeBeforeMute = 0.0F;
 
     QStackedLayout* _mainLayout = nullptr;
 
-    CurrentMediaType _currentMediaType;
+    CurrentMediaType _currentMediaType = CurrentMediaType::Image;
 
     CachedMediaProxy _cachedMediaProxy;
     std::shared_ptr<QImage> _image;
@@ -79,4 +79,5 @@ private:
 
     void syncAnimationSize();
     void connectAnimationSignals();
+    void initVideoPlayer();
 };
