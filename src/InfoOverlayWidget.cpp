@@ -20,7 +20,7 @@ InfoOverlayWidget::InfoOverlayWidget(QWidget* parent)
     _layout->addStretch(1);
     _layout->addWidget(_info_label, 0, Qt::AlignmentFlag::AlignBottom);
 
-    constexpr const char* stylesheetFormat =
+    constexpr auto stylesheetFormat =
         "QWidget{{background-color:{}; color:#ccffaa; padding:0.5em; "
         "margin:0px; outline-style:solid; outline-color:#000000; outline-width:1px;}}";
 
@@ -39,9 +39,9 @@ InfoOverlayWidget::InfoOverlayWidget(QWidget* parent)
     _info_label->setWordWrap(false);
     _info_label->setTextFormat(Qt::TextFormat::RichText);
 
-    QGraphicsDropShadowEffect* dropShadow = new QGraphicsDropShadowEffect(this);    
+    auto* dropShadow = new QGraphicsDropShadowEffect(this);
     dropShadow->setBlurRadius(0);
-    dropShadow->setColor(QColor("#000000"));
+    dropShadow->setColor(QColor(0x000000u));
     dropShadow->setOffset(2, 2);
 
     _message_label->setGraphicsEffect(dropShadow);
@@ -60,30 +60,30 @@ InfoOverlayWidget::InfoOverlayWidget(QWidget* parent)
     disableFocusOnChildWidgets(this);
 }
 
-bool InfoOverlayWidget::isInfoShown()
+bool InfoOverlayWidget::isInfoShown() const
 {
     return !_info_label->isHidden();
 }
 
-bool InfoOverlayWidget::isMessageShown()
+bool InfoOverlayWidget::isMessageShown() const
 {
     return !_message_label->isHidden();
 }
 
-void InfoOverlayWidget::showMessage(const QString& message)
+void InfoOverlayWidget::showMessage(const QString& message) const
 {
     _message_label->setText(message);
     _message_label->show();
     _message_timer->start();
 }
 
-void InfoOverlayWidget::showInfo(const QString& info)
+void InfoOverlayWidget::showInfo(const QString& info) const
 {
     _info_label->setText(info);
     _info_label->show();
 }
 
-void InfoOverlayWidget::hideInfo()
+void InfoOverlayWidget::hideInfo() const
 {
     _info_label->hide();
 }

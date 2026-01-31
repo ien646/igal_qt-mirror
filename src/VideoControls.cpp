@@ -137,13 +137,13 @@ void VideoControls::setCurrentVideoPosition(int64_t posMs)
     updateSeekLabel(posMs);
 }
 
-void VideoControls::setCurrentVolume(int percent)
+void VideoControls::setCurrentVolume(int percent) const
 {
     _volume_slider->setSliderPosition(percent);
     _volume_label->setText(QString::fromStdString(std::format("Volume: {}%", percent)));
 }
 
-void VideoControls::setAudioChannelInfo(const std::map<int, std::string>& channelInfo)
+void VideoControls::setAudioChannelInfo(const std::map<int, std::string>& channelInfo) const
 {
     if (channelInfo.empty())
     {
@@ -167,7 +167,7 @@ void VideoControls::setAudioChannelInfo(const std::map<int, std::string>& channe
     }
 }
 
-void VideoControls::updateButtonStyles()
+void VideoControls::updateButtonStyles() const
 {
     constexpr const char* standard_stylesheet =
         "QLabel{ padding: 2px; border-radius: 2px; background-color: rgba(0, "
@@ -195,7 +195,7 @@ void VideoControls::updateButtonStyles()
     }
 }
 
-void VideoControls::updateSeekLabel(int64_t posMs)
+void VideoControls::updateSeekLabel(const int64_t posMs) const
 {
     const auto ms = std::chrono::milliseconds(posMs);
     const auto s = std::chrono::duration_cast<std::chrono::seconds>(ms);

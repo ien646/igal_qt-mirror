@@ -6,15 +6,15 @@
 
 #include <ranges>
 
-constexpr const char* UNSELECTED_STYLESHEET =
+constexpr auto UNSELECTED_STYLESHEET =
     "QLabel{ background-color: rgba(30, 30, 30, 200); padding: 0.3em; "
     "border-width: 2px; border-style: solid; border-color: rgba(30, 30, 30, 30)}";
 
-constexpr const char* CURRENT_STYLESHEET =
+constexpr auto CURRENT_STYLESHEET =
     "QLabel{ background-color: rgba(50, 150, 255, 220); padding: 0.3em; "
     "border-style: solid; border-color: #ffff88; border-width: 2px; }";
 
-constexpr const char* SELECTED_STYLESHEET =
+constexpr auto SELECTED_STYLESHEET =
     "QLabel{ background-color: rgba(60, 160, 255, 220); padding: 0.3em;"
     "border-style: dashed; border-color: #ffff88; border-width: 2px; }";
 
@@ -38,7 +38,7 @@ void ListSelectWidget::setItems(const std::vector<std::string>& items)
 
     while (QLayoutItem* item = _layout->takeAt(0))
     {
-        auto widget = item->widget();
+        const auto widget = item->widget();
         delete widget;
         _layout->removeItem(item);
         delete item;
@@ -47,7 +47,7 @@ void ListSelectWidget::setItems(const std::vector<std::string>& items)
     _layout->addStretch(1);
     for (const auto& item : _items)
     {
-        QLabel* label = new QLabel(this);
+        auto* label = new QLabel(this);
         label->setAlignment(Qt::AlignmentFlag::AlignCenter);
         label->setFont(getTextFont());
         label->setStyleSheet(UNSELECTED_STYLESHEET);

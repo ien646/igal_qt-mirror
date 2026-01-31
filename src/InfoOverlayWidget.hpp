@@ -10,11 +10,11 @@ class InfoOverlayWidget : public QWidget
 public:
     InfoOverlayWidget(QWidget* parent = nullptr);
 
-    bool isInfoShown();
-    bool isMessageShown();
-    void showMessage(const QString& message);
-    void showInfo(const QString& info);
-    void hideInfo();
+    bool isInfoShown() const;
+    bool isMessageShown() const;
+    void showMessage(const QString& message) const;
+    void showInfo(const QString& info) const;
+    void hideInfo() const;
 
 private:
     QVBoxLayout* _layout;

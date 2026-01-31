@@ -89,7 +89,7 @@ void MediaWidget::setMedia(const std::string& source)
     }
 }
 
-std::variant<const QImage*, const QMovie*, const QMediaPlayer*> MediaWidget::currentMediaSource()
+std::variant<const QImage*, const QMovie*, const QMediaPlayer*> MediaWidget::currentMediaSource() const
 {
     switch (_currentMediaType)
     {
@@ -103,22 +103,22 @@ std::variant<const QImage*, const QMovie*, const QMediaPlayer*> MediaWidget::cur
     return {};
 }
 
-bool MediaWidget::isInfoShown()
+bool MediaWidget::isInfoShown() const
 {
     return _infoOverlay->isInfoShown();
 }
 
-void MediaWidget::showMessage(const QString& message)
+void MediaWidget::showMessage(const QString& message) const
 {
     _infoOverlay->showMessage(message);
 }
 
-void MediaWidget::showInfo(const QString& info)
+void MediaWidget::showInfo(const QString& info) const
 {
     _infoOverlay->showInfo(info);
 }
 
-void MediaWidget::hideInfo()
+void MediaWidget::hideInfo() const
 {
     _infoOverlay->hideInfo();
 }
@@ -131,7 +131,6 @@ void MediaWidget::toggleMute()
     }
 
     QAudioOutput* audioOutput = _videoPlayer->audioOutput();
-
     if (!audioOutput->isMuted())
     {
         _volumeBeforeMute = audioOutput->volume();
@@ -145,7 +144,7 @@ void MediaWidget::toggleMute()
     }
 }
 
-void MediaWidget::togglePlayPauseVideo()
+void MediaWidget::togglePlayPauseVideo() const
 {
     if (!_videoPlayer)
     {
@@ -165,23 +164,55 @@ void MediaWidget::togglePlayPauseVideo()
     }
 }
 
+void MediaWidget::updateTransform()
+{
+    if (!_image)
+    {
+        return;
+    }
+
+    _currentTranslation.setX(std::clamp(_currentTranslation.x(), -1.0, 1.0));
+    _currentTranslation.setY(std::clamp(_currentTranslation.y(), -1.0, 1.0));
+
+    const auto pixmapSize = _image->size();
+    const auto sourceRectSize = size().scaled(pixmapSize, Qt::KeepAspectRatioByExpanding) / _currentZoom;
+    const auto diff = pixmapSize - sourceRectSize;
+
+    const float translateX = ien::
+        remap(_currentTranslation.x(), -1, 1, static_cast<float>(-diff.width()) / 2, static_cast<float>(diff.width()) / 2);
+    const float translateY = ien::
+        remap(_currentTranslation.y(), -1, 1, static_cast<float>(-diff.height()) / 2, static_cast<float>(diff.height()) / 2);
+
+    const QRect sourceRect(
+        (diff.width() / 2.0f) + translateX,
+        (diff.height() / 2.0f) + translateY,
+        sourceRectSize.width(),
+        sourceRectSize.height());
+
+    const auto imageRect = _image->copy(sourceRect);
+    const QSize targetSize = imageRect.size().scaled(size() * devicePixelRatio(), Qt::KeepAspectRatio);
+    const auto pixmap = QPixmap::fromImage(imageRect.scaled(targetSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+    _imageLabel->setPixmap(pixmap);
+    _imageLabel->setScaledContents(true);
+}
+
 void MediaWidget::paintEvent(QPaintEvent* ev)
 {
     if (!std::filesystem::exists(_target))
     {
         QPainter painter(this);
-        auto now = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch());
+        const auto now = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch());
         if (now.count() % 2 == 0)
         {
             painter.setFont(getTextFont(24));
-            painter.setBrush(QBrush(QColor("#CCDD00")));
-            painter.setPen(QColor("#CCDD00"));
+            painter.setBrush(QBrush(QColor(0xCCDD00u)));
+            painter.setPen(QColor(0xCCDD00u));
             painter.drawText(QPoint(24, 48), "No media");
         }
         else
         {
-            painter.setBrush(QBrush(QColor("#000000")));
-            painter.setPen(QColor("#000000"));
+            painter.setBrush(QBrush(QColor(0x000000u)));
+            painter.setPen(QColor(0x000000u));
             painter.drawRect(16, 48, 100, -100);
         }
         update();
@@ -212,80 +243,40 @@ CachedMediaProxy& MediaWidget::cachedMediaProxy()
     return _cachedMediaProxy;
 }
 
-void MediaWidget::zoomIn(float amount)
+void MediaWidget::zoomIn(const float amount)
 {
     _currentZoom += amount;
     updateTransform();
 }
 
-void MediaWidget::zoomOut(float amount)
+void MediaWidget::zoomOut(const float amount)
 {
     _currentZoom = std::max(1.0f, _currentZoom - amount);
     updateTransform();
 }
 
-void MediaWidget::translateLeft(float amount)
+void MediaWidget::translateLeft(const float amount)
 {
     _currentTranslation -= QPointF{ amount, 0 };
     updateTransform();
 }
 
-void MediaWidget::translateRight(float amount)
+void MediaWidget::translateRight(const float amount)
 {
     _currentTranslation += QPointF{ amount, 0 };
     updateTransform();
 }
 
-void MediaWidget::translateUp(float amount)
+void MediaWidget::translateUp(const float amount)
 {
     _currentTranslation += QPointF{ 0, amount };
     updateTransform();
 }
 
-void MediaWidget::translateDown(float amount)
+void MediaWidget::translateDown(const float amount)
 {
     _currentTranslation -= QPointF{ 0, amount };
     updateTransform();
-}
-
-void MediaWidget::syncAnimationSize()
-{
-    updateTransform();
-}
-
-void MediaWidget::updateTransform()
-{
-    if (!_image)
-    {
-        return;
-    }
-
-    _currentTranslation.setX(std::clamp(_currentTranslation.x(), -1.0, 1.0));
-    _currentTranslation.setY(std::clamp(_currentTranslation.y(), -1.0, 1.0));
-
-    const auto currentSize = size();
-    const auto aspectRatio = static_cast<float>(size().width()) / size().height();
-
-    const auto pixmapSize = _image->size();
-    auto sourceRectSize = size().scaled(pixmapSize, Qt::KeepAspectRatioByExpanding) / _currentZoom;
-    const auto diff = pixmapSize - sourceRectSize;
-
-    float translateX = ien::
-        remap(_currentTranslation.x(), -1, 1, static_cast<float>(-diff.width()) / 2, static_cast<float>(diff.width()) / 2);
-    float translateY = ien::
-        remap(_currentTranslation.y(), -1, 1, static_cast<float>(-diff.height()) / 2, static_cast<float>(diff.height()) / 2);
-
-    const QRect sourceRect(
-        (diff.width() / 2.0f) + translateX,
-        (diff.height() / 2.0f) + translateY,
-        sourceRectSize.width(),
-        sourceRectSize.height());
-
-    auto imageRect = _image->copy(sourceRect);
-    const QSize targetSize = imageRect.size().scaled(size() * devicePixelRatio(), Qt::KeepAspectRatio);
-    auto pixmap = QPixmap::fromImage(imageRect.scaled(targetSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
-    _imageLabel->setPixmap(pixmap);
-    _imageLabel->setScaledContents(true);
 }
 
 void MediaWidget::resetTransform()
@@ -295,7 +286,7 @@ void MediaWidget::resetTransform()
     updateTransform();
 }
 
-void MediaWidget::increaseVideoSpeed(float amount)
+void MediaWidget::increaseVideoSpeed(const float amount) const
 {
     if (_currentMediaType == CurrentMediaType::Video && _videoPlayer)
     {
@@ -311,7 +302,7 @@ void MediaWidget::increaseVideoSpeed(float amount)
     }
 }
 
-void MediaWidget::increaseVideoVolume(float amount)
+void MediaWidget::increaseVideoVolume(const float amount) const
 {
     if (_currentMediaType == CurrentMediaType::Video)
     {
@@ -320,9 +311,14 @@ void MediaWidget::increaseVideoVolume(float amount)
     }
 }
 
+void MediaWidget::syncAnimationSize()
+{
+    updateTransform();
+}
+
 void MediaWidget::connectAnimationSignals()
 {
-    connect(_animation.get(), &QMovie::frameChanged, this, [this](int frame) {
+    connect(_animation.get(), &QMovie::frameChanged, this, [this]([[maybe_unused]] int frame) {
         _image = std::make_shared<QImage>(_animation->currentImage());
         updateTransform();
     });

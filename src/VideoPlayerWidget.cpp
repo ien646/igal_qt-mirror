@@ -91,7 +91,7 @@ void VideoPlayerWidget::setupConnections()
         _video_controls,
         &VideoControls::videoPositionChanged,
         this,
-        [this](float pos) {
+        [this](const float pos) {
             _media_player->setPosition(static_cast<float>(_media_player->duration()) * pos);
         });
 
@@ -145,7 +145,7 @@ void VideoPlayerWidget::setupConnections()
         _video_controls,
         &VideoControls::volumeChanged,
         this,
-        [this](int volume) {
+        [this](const int volume) {
             if (_audio_output)
             {
                 _audio_output->setVolume(static_cast<float>(volume) / 100);
@@ -156,7 +156,7 @@ void VideoPlayerWidget::setupConnections()
         _video_controls,
         &VideoControls::audioChannelChanged,
         this,
-        [this](int index) {
+        [this](const int index) {
             _media_player->setActiveAudioTrack(index);
         });
 
@@ -164,7 +164,7 @@ void VideoPlayerWidget::setupConnections()
         _media_player,
         &QMediaPlayer::positionChanged,
         _video_controls,
-        [&](qint64 pos) {
+        [&](const qint64 pos) {
             if (_media_player->isPlaying())
             {
                 _video_controls->setCurrentVideoDuration(_media_player->duration());
@@ -252,12 +252,12 @@ void VideoPlayerWidget::mouseReleaseEvent(QMouseEvent* ev)
     _autoHideTimer->start();
 }
 
-QMediaPlayer* VideoPlayerWidget::mediaPlayer()
+QMediaPlayer* VideoPlayerWidget::mediaPlayer() const
 {
     return _media_player;
 }
 
-QAudioOutput* VideoPlayerWidget::audioOutput()
+QAudioOutput* VideoPlayerWidget::audioOutput() const
 {
     return _audio_output;
 }

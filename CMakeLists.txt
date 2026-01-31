@@ -4,6 +4,8 @@ set(PROJECT_NAME igal_qt)
 
 include(cmake/CPM.cmake)
 
+set(QT_DEPLOY_SKIP_RPATH ON)
+
 project(igal_qt VERSION 1.11.3)
 
 if(WIN32)
@@ -70,7 +72,7 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
-    CXX_STANDARD 20
+    CXX_STANDARD 23
     CXX_STANDARD_REQUIRED ON
     CXX_EXTENSIONS OFF
     AUTOMOC ON
@@ -95,6 +97,7 @@ qt_generate_deploy_app_script(
     OUTPUT_SCRIPT deploy_script
     NO_UNSUPPORTED_PLATFORM_ERROR
     NO_TRANSLATIONS
+    NO_PLUGINS
 )
 install(SCRIPT ${deploy_script})
 

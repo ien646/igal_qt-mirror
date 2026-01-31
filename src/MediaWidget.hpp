@@ -30,13 +30,13 @@ public:
 
     void setMedia(const std::string& source);
 
-    std::variant<const QImage*, const QMovie*, const QMediaPlayer*> currentMediaSource();
-    bool isInfoShown();
-    void showMessage(const QString& message);
-    void showInfo(const QString& info);
-    void hideInfo();
+    std::variant<const QImage*, const QMovie*, const QMediaPlayer*> currentMediaSource() const;
+    bool isInfoShown() const;
+    void showMessage(const QString& message) const;
+    void showInfo(const QString& info) const;
+    void hideInfo() const;
     void toggleMute();
-    void togglePlayPauseVideo();
+    void togglePlayPauseVideo() const;
     void updateTransform();
 
     void paintEvent(QPaintEvent* ev) override;
@@ -52,8 +52,8 @@ public:
     void translateDown(float amount);
     void resetTransform();
 
-    void increaseVideoSpeed(float amount);
-    void increaseVideoVolume(float amount);
+    void increaseVideoSpeed(float amount) const;
+    void increaseVideoVolume(float amount) const;
 
     CurrentMediaType currentMediaType() const { return _currentMediaType; }
 

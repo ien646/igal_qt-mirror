@@ -38,23 +38,23 @@ void ClickableSlider::paintEvent(QPaintEvent* ev)
         seekPos = ien::remap(value(), 0, maximum(), 0, width() - contentsMargins().left() - contentsMargins().right());
 
     // Background
-    painter.setBrush(QBrush("#4466CA"));
+    painter.setBrush(QBrush(0x4466CA));
     painter.setPen(Qt::transparent);
     painter.drawRect(this->rect());
 
     // Filled segment
     const QRect filledRect(0, 0, seekPos, height());
-    painter.setBrush(QBrush("#CACA69"));
+    painter.setBrush(QBrush(0xCACA69));
     painter.drawRect(filledRect);
 
     // Seek bar
     const QRect barRect(seekPos - 1, 0, 2, height());
-    painter.setBrush(QBrush("#FFFF00"));
+    painter.setBrush(QBrush(0xFFFF00));
     painter.drawRect(barRect);
 
     // Border
     painter.setBrush(Qt::BrushStyle::NoBrush);
     painter.setPen(
-        QPen(QBrush(QColor("#ffffff")), 2, Qt::PenStyle::SolidLine, Qt::PenCapStyle::FlatCap, Qt::PenJoinStyle::BevelJoin));
+        QPen(QBrush(QColor(0xFFFFFF)), 2, Qt::PenStyle::SolidLine, Qt::PenCapStyle::FlatCap, Qt::PenJoinStyle::BevelJoin));
     painter.drawRect(this->rect());
 }

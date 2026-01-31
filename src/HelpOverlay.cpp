@@ -55,14 +55,14 @@ HelpOverlay::HelpOverlay(QWidget* parent)
 
     for (const auto& line : CONTROLS_LINES)
     {
-        QLabel* label = new QLabel(this);
+        auto* label = new QLabel(this);
         label->setTextFormat(Qt::TextFormat::RichText);
         label->setFocusPolicy(Qt::FocusPolicy::NoFocus);
         label->setText(QString::fromStdString(line));
         label->setFont(getTextFont());
         label->setAttribute(Qt::WidgetAttribute::WA_TransparentForMouseEvents);
 
-        QListWidgetItem* item = new QListWidgetItem();
+        auto* item = new QListWidgetItem();
         _list->addItem(item);
         _list->setItemWidget(item, label);
     }
@@ -70,12 +70,12 @@ HelpOverlay::HelpOverlay(QWidget* parent)
 
 void HelpOverlay::moveUp()
 {
-    int step = _list->verticalScrollBar()->singleStep();
+    const int step = _list->verticalScrollBar()->singleStep();
     _list->verticalScrollBar()->setValue(_list->verticalScrollBar()->value() - step);
 }
 
 void HelpOverlay::moveDown()
 {
-    int step = _list->verticalScrollBar()->singleStep();
+    const int step = _list->verticalScrollBar()->singleStep();
     _list->verticalScrollBar()->setValue(_list->verticalScrollBar()->value() + step);
 }

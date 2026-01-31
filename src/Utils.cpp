@@ -241,7 +241,10 @@ QFont getTextFont(int size)
     return result;
 }
 
-void runCommand(const std::string& command, const std::vector<std::string>& args, std::function<void(std::string)> messageCallback)
+void runCommand(
+    const std::string& command,
+    const std::vector<std::string>& args,
+    const std::function<void(std::string)>& messageCallback)
 {
     QStringList cmdargs;
     for (const auto& a : args)
@@ -263,7 +266,6 @@ void runCommand(const std::string& command, const std::vector<std::string>& args
             messageCallback(message.toStdString());
         }
     }
-    proc.exitStatus();
 }
 
 void disableFocusOnChildWidgets(QWidget* widget)

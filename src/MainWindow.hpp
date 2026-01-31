@@ -73,10 +73,10 @@ private:
     void randomEntry();
     void toggleFullScreen();
     void loadLinks();
-    void toggleCurrentFileInfo();
-    void updateCurrentFileInfo();
-    void processCopyToLinkKey(QKeyEvent* ev);
-    void preCacheSurroundings();
+    void toggleCurrentFileInfo() const;
+    void updateCurrentFileInfo() const;
+    void processCopyToLinkKey(const QKeyEvent* ev);
+    void preCacheSurroundings() const;
     void upscaleImage(const std::string& path, const std::string& model);
     void navigateDir(const std::string& path);
     void deleteFile(const std::string& path);

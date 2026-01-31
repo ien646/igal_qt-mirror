@@ -28,8 +28,8 @@ public:
     void mousePressEvent(QMouseEvent* ev) override;
     void mouseReleaseEvent(QMouseEvent* ev) override;
 
-    QMediaPlayer* mediaPlayer();
-    QAudioOutput* audioOutput();
+    QMediaPlayer* mediaPlayer() const;
+    QAudioOutput* audioOutput() const;
 
 private:
     std::string _target;

@@ -22,9 +22,9 @@ public:
     void setCurrentVideoDuration(int64_t ms);
     void setCurrentVideoPosition(int64_t posMs);
 
-    void setCurrentVolume(int percent);
+    void setCurrentVolume(int percent) const;
 
-    void setAudioChannelInfo(const std::map<int, std::string>& channelInfo);
+    void setAudioChannelInfo(const std::map<int, std::string>& channelInfo) const;
 
 signals:
     void playClicked();
@@ -51,6 +51,6 @@ private:
     ClickableSlider* _volume_slider = nullptr;
     QComboBox* _audio_channel_combo = nullptr;
 
-    void updateButtonStyles();
-    void updateSeekLabel(int64_t posMs);
+    void updateButtonStyles() const;
+    void updateSeekLabel(int64_t posMs) const;
 };

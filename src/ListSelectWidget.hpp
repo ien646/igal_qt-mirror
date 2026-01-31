@@ -23,7 +23,7 @@ signals:
 
 private:
     std::vector<std::string> _items;
-    QVBoxLayout* _layout;
+    QVBoxLayout* _layout = nullptr;
     std::vector<QLabel*> _labels;
     size_t _currentIndex = 0;
     bool _multiselect = false;

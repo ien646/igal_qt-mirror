@@ -112,7 +112,7 @@ void PreviewStrip::loadImages(const std::vector<std::string>& paths)
             }
             else if (isAnimation(path))
             {
-                auto anim = _cachedMediaProxy.getAnimation(path);
+                auto anim = CachedMediaProxy::getAnimation(path);
                 if (_movies[i])
                 {
                     _movies[i]->stop();

@@ -5,7 +5,7 @@
 
 #include "Utils.hpp"
 
-CachedMediaProxy::CachedMediaProxy(size_t maxMB)
+CachedMediaProxy::CachedMediaProxy(const size_t maxMB)
     : _maxCacheSize(maxMB * 1024 * 1024)
 {
 }
@@ -18,26 +18,24 @@ std::shared_future<CachedImage> CachedMediaProxy::getImage(const std::string& pa
     {
         return _cached_images.at(path);
     }
-    else
-    {
-        std::lock_guard lock(_mutex);
-        std::shared_future<CachedImage> future = std::async(std::launch::async, [this, path] {
-            const auto now = std::chrono::system_clock::now().time_since_epoch().count();
-            CachedImage cachedImage(path, now, QImage(QString::fromStdString(path)));
 
-            _mutex.lock();
-            if (_currentCacheSize + cachedImage.getMemorySize() > _maxCacheSize)
-            {
-                deleteOldest();
-            }
-            _currentCacheSize += cachedImage.getMemorySize();
-            _mutex.unlock();
+    std::lock_guard lock(_mutex);
+    std::shared_future future = std::async(std::launch::async, [this, path] {
+        const auto now = std::chrono::system_clock::now().time_since_epoch().count();
+        CachedImage cachedImage(path, now, QImage(QString::fromStdString(path)));
 
-            return cachedImage;
-        });
-        _cached_images.emplace(path, future);
-        return future;
-    }
+        _mutex.lock();
+        if (_currentCacheSize + cachedImage.getMemorySize() > _maxCacheSize)
+        {
+            deleteOldest();
+        }
+        _currentCacheSize += cachedImage.getMemorySize();
+        _mutex.unlock();
+
+        return cachedImage;
+    });
+    _cached_images.emplace(path, future);
+    return future;
 }
 
 std::shared_ptr<QMovie> CachedMediaProxy::getAnimation(const std::string& path)
@@ -52,17 +50,17 @@ void CachedMediaProxy::preCacheImage(const std::string& path)
         return;
     }
 
-    if (_cached_images.count(path))
+    if (_cached_images.contains(path))
     {
         return;
     }
 
     std::lock_guard lock(_mutex);
 
-    std::shared_future<CachedImage> future = std::async(std::launch::async, [&]() -> CachedImage {
+    std::shared_future future = std::async(std::launch::async, [&]() -> CachedImage {
         QImage image(QString::fromStdString(path));
-        time_t now = std::chrono::system_clock::now().time_since_epoch().count();
-        return CachedImage(path, now, std::move(image));
+        const time_t now = std::chrono::system_clock::now().time_since_epoch().count();
+        return { path, now, std::move(image) };
     });
 
     _cached_images.emplace(path, std::move(future));
@@ -83,7 +81,7 @@ void CachedMediaProxy::clear()
 void CachedMediaProxy::deleteOldest()
 {
     const CachedImage* oldest = nullptr;
-    for (const auto& [path, future] : _cached_images)
+    for (const auto& future : _cached_images | std::views::values)
     {
         const auto& image = future.get();
         if (oldest == nullptr)

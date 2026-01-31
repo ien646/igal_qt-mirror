@@ -36,9 +36,8 @@ int main(int argc, char** argv)
     QApplication app(argc, argv);
 
     const QIcon icon(":/igal_qt.png");
-    app.setWindowIcon(icon);
-
     QGuiApplication::setWindowIcon(icon);
+
     try
     {
         QFontDatabase::addApplicationFont(":/JohtoMono-Regular.otf");
