@@ -17,7 +17,7 @@
 #include <unordered_set>
 
 const std::unordered_set<std::string> ANIMATION_EXTENSIONS = { ".gif", ".png", ".webp" };
-const std::unordered_set<std::string> IMAGE_EXTENSIONS = { ".png", ".jpg", ".jpeg", ".webp" };
+const std::unordered_set<std::string> IMAGE_EXTENSIONS = { ".png", ".jpg", ".jpeg", ".webp", ".jxl" };
 const std::unordered_set<std::string> VIDEO_EXTENSIONS = { ".mkv", ".mp4", ".webm", ".mov" };
 
 constexpr const char* APNG_IDAT_STR = "IDAT";
@@ -25,7 +25,7 @@ constexpr const char* APNG_ACTL_STR = "acTL";
 constexpr const char* WEBP_ANIM_STR = "ANIM";
 constexpr const char* WEBP_ANMF_STR = "ANMF";
 
-bool isPngAnimated(std::span<const std::byte> data)
+bool isPngAnimated(const std::span<const std::byte> data)
 {
     if (data.empty())
     {
