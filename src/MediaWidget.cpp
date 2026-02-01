@@ -7,7 +7,9 @@
 
 #include <filesystem>
 
+#include "../cmake-build-release/_deps/libien-src/lib/include/ien/bits/str_utils/tolowerupper.hpp"
 #include "Utils.hpp"
+#include "ien/fs_utils.hpp"
 
 #include <QApplication>
 
@@ -70,9 +72,38 @@ void MediaWidget::setMedia(const std::string& source)
     }
     else if (isAnimation(_target))
     {
+        auto real_source = source;
+        if (ien::str_tolower(_target).ends_with(".png"))
+        {
+            real_source = std::format("/tmp/igal_qt{}.gif", std::filesystem::absolute(_target).string());
+            if (std::filesystem::file_size(real_source) == 0)
+            {
+                _currentMediaType = CurrentMediaType::Image;
+                _image = _cachedMediaProxy.getImage(source).get().image();
+                _imageLabel->setMovie(nullptr);
+                updateTransform();
+                _imageLabel->show();
+                return;
+            }
+            if (!std::filesystem::exists(real_source))
+            {
+                std::filesystem::create_directories(ien::get_file_directory(real_source));
+                runCommand("ffmpeg", { "-n", "-i", _target, real_source }, []([[maybe_unused]] const std::string&) {});
+                if (!std::filesystem::exists(real_source) || std::filesystem::file_size(real_source) == 0)
+                {
+                    _currentMediaType = CurrentMediaType::Image;
+                    _image = _cachedMediaProxy.getImage(source).get().image();
+                    _imageLabel->setMovie(nullptr);
+                    updateTransform();
+                    _imageLabel->show();
+                    return;
+                }
+            }
+        }
         _currentMediaType = CurrentMediaType::Animation;
-        _animation = _cachedMediaProxy.getAnimation(source);
+        _animation = _cachedMediaProxy.getAnimation(real_source);
         _animation->setCacheMode(QMovie::CacheMode::CacheAll);
+        std::printf("Frame count: %d\n", _animation->frameCount());
         connectAnimationSignals();
         _imageLabel->setPixmap({});
         _animation->start();
@@ -201,7 +232,8 @@ void MediaWidget::paintEvent(QPaintEvent* ev)
     if (!std::filesystem::exists(_target))
     {
         QPainter painter(this);
-        const auto now = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch());
+        const auto now = std::chrono::duration_cast<std::chrono::seconds>(
+            std::chrono::system_clock::now().time_since_epoch());
         if (now.count() % 2 == 0)
         {
             painter.setFont(getTextFont(24));
@@ -322,6 +354,8 @@ void MediaWidget::connectAnimationSignals()
         _image = std::make_shared<QImage>(_animation->currentImage());
         updateTransform();
     });
+
+    connect(_animation.get(), &QMovie::finished, _animation.get(), &QMovie::start);
 }
 
 void MediaWidget::initVideoPlayer()

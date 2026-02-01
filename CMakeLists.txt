@@ -4,8 +4,6 @@ set(PROJECT_NAME igal_qt)
 
 include(cmake/CPM.cmake)
 
-set(QT_DEPLOY_SKIP_RPATH ON)
-
 project(igal_qt VERSION 1.11.3)
 
 if(WIN32)

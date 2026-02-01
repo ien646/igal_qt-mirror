@@ -25,6 +25,8 @@ constexpr const char* APNG_ACTL_STR = "acTL";
 constexpr const char* WEBP_ANIM_STR = "ANIM";
 constexpr const char* WEBP_ANMF_STR = "ANMF";
 
+constexpr auto APNG_CHECK_BUFFER_SIZE = 256;
+
 bool isPngAnimated(const std::span<const std::byte> data)
 {
     if (data.empty())
@@ -74,19 +76,48 @@ bool isAnimation(const std::string& path, bool shallow)
             return false;
         }
 
-        const auto data = ien::read_file_binary(path);
-        if (!data)
-        {
-            return false;
-        }
-
         if (extension == ".png")
         {
-            return isPngAnimated(*data);
+            std::array<char, APNG_CHECK_BUFFER_SIZE> data{};
+            ien::unique_file_descriptor fd(path, ien::unique_file_descriptor_mode::READ);
+
+            bool first_chunk = true;
+            bool eof = false;
+            for (;;)
+            {
+                if (first_chunk)
+                {
+                    if (fd.read(data.data(), APNG_CHECK_BUFFER_SIZE) < APNG_CHECK_BUFFER_SIZE)
+                    {
+                        eof = true;
+                    }
+                    first_chunk = false;
+                }
+                else
+                {
+                    // Copy last three characters to the beginning of the buffer to check against new data
+                    data[0] = data[APNG_CHECK_BUFFER_SIZE - 3];
+                    data[1] = data[APNG_CHECK_BUFFER_SIZE - 2];
+                    data[2] = data[APNG_CHECK_BUFFER_SIZE - 1];
+                    if (fd.read(data.data(), APNG_CHECK_BUFFER_SIZE - 3) < APNG_CHECK_BUFFER_SIZE - 3)
+                    {
+                        eof = true;
+                    }
+                }
+                std::string_view sv(data.data(), data.size());
+                if (sv.contains(APNG_ACTL_STR))
+                {
+                    return true;
+                }
+                if (sv.contains(APNG_IDAT_STR) || eof)
+                {
+                    return false;
+                }
+            }
         }
         if (extension == ".webp")
         {
-            return isWebpAnimated(*data);
+            return isWebpAnimated(*ien::read_file_binary(path));
         }
         if (extension == ".gif")
         {
@@ -98,7 +129,7 @@ bool isAnimation(const std::string& path, bool shallow)
 
 bool isVideo(const std::string& path)
 {
-    return VIDEO_EXTENSIONS.count(ien::str_tolower(ien::get_file_extension(path)));
+    return VIDEO_EXTENSIONS.contains(ien::str_tolower(ien::get_file_extension(path)));
 }
 
 std::unordered_map<int, std::string> getLinksFromFile(const std::string& path)
@@ -246,11 +277,14 @@ void runCommand(
     const std::vector<std::string>& args,
     const std::function<void(std::string)>& messageCallback)
 {
+    printf("Running command: %s ", command.c_str());
     QStringList cmdargs;
     for (const auto& a : args)
     {
+        printf("%s ", a.c_str());
         cmdargs.push_back(QString::fromStdString(a));
     }
+    printf("\n");
     QProcess proc;
     proc.start(QString::fromStdString(command), cmdargs);
 

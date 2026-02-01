@@ -538,7 +538,7 @@ void MainWindow::filterVideos()
 #pragma omp parallel
         {
             std::vector<FileEntry> threadResult;
-#pragma omp for
+#pragma omp for schedule(dynamic)
             for (long i = 0; i < _fileList.size(); ++i)
             {
                 const auto& entry = _fileList[i];
