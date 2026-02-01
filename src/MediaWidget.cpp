@@ -101,7 +101,7 @@ void MediaWidget::setMedia(const std::string& source)
             }
         }
         _currentMediaType = CurrentMediaType::Animation;
-        _animation = _cachedMediaProxy.getAnimation(real_source);
+        _animation = CachedMediaProxy::getAnimation(real_source);
         _animation->setCacheMode(QMovie::CacheMode::CacheAll);
         std::printf("Frame count: %d\n", _animation->frameCount());
         connectAnimationSignals();
@@ -209,14 +209,15 @@ void MediaWidget::updateTransform()
     const auto sourceRectSize = size().scaled(pixmapSize, Qt::KeepAspectRatioByExpanding) / _currentZoom;
     const auto diff = pixmapSize - sourceRectSize;
 
-    const float translateX = ien::
-        remap(_currentTranslation.x(), -1, 1, static_cast<float>(-diff.width()) / 2, static_cast<float>(diff.width()) / 2);
-    const float translateY = ien::
-        remap(_currentTranslation.y(), -1, 1, static_cast<float>(-diff.height()) / 2, static_cast<float>(diff.height()) / 2);
+    const float half_width = static_cast<float>(diff.width()) / 2;
+    const float half_height = static_cast<float>(diff.height()) / 2;
+
+    const float translateX = ien::remap(static_cast<float>(_currentTranslation.x()), -1, 1, -half_width, half_width);
+    const float translateY = ien::remap(static_cast<float>(_currentTranslation.y()), -1, 1, -half_height, half_height);
 
     const QRect sourceRect(
-        (diff.width() / 2.0f) + translateX,
-        (diff.height() / 2.0f) + translateY,
+        static_cast<int>(half_width + translateX),
+        static_cast<int>(half_height + translateY),
         sourceRectSize.width(),
         sourceRectSize.height());
 
@@ -328,8 +329,8 @@ void MediaWidget::increaseVideoSpeed(const float amount) const
     }
     else if (_currentMediaType == CurrentMediaType::Animation)
     {
-        const auto rate = std::max(0.0f, _animation->speed() + (100.0f * amount));
-        _animation->setSpeed(rate);
+        const auto rate = std::max(0.0f, static_cast<float>(_animation->speed()) + (100.0f * amount));
+        _animation->setSpeed(static_cast<int>(rate));
         showMessage("x" + QString::number(rate / 100.f, 10, 2));
     }
 }

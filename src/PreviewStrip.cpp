@@ -130,7 +130,7 @@ void PreviewStrip::loadImages(const std::vector<std::string>& paths)
                 _completed[i] = true;
             }
         }
-        if (std::ranges::all_of(_completed, [](bool v) { return v; }))
+        if (std::ranges::all_of(_completed, [](const bool v) { return v; }))
         {
             _timer->stop();
         }

@@ -53,23 +53,23 @@ bool isWebpAnimated(std::span<const std::byte> data)
 bool hasMediaExtension(const std::string& path)
 {
     const auto ext = ien::str_tolower(ien::get_file_extension(path));
-    return IMAGE_EXTENSIONS.count(ext) || ANIMATION_EXTENSIONS.count(ext) || VIDEO_EXTENSIONS.count(ext);
+    return IMAGE_EXTENSIONS.contains(ext) || ANIMATION_EXTENSIONS.contains(ext) || VIDEO_EXTENSIONS.contains(ext);
 }
 
-bool isImage(const std::string& source)
+bool isImage(const std::string& path)
 {
-    const auto ext = ien::str_tolower(ien::get_file_extension(source));
-    if (isAnimation(source))
+    const auto ext = ien::str_tolower(ien::get_file_extension(path));
+    if (isAnimation(path))
     {
         return false;
     }
-    return IMAGE_EXTENSIONS.count(ext);
+    return IMAGE_EXTENSIONS.contains(ext);
 }
 
-bool isAnimation(const std::string& path, bool shallow)
+bool isAnimation(const std::string& path, const bool shallow)
 {
     const std::string extension = ien::str_tolower(ien::get_file_extension(path));
-    if (ANIMATION_EXTENSIONS.count(extension))
+    if (ANIMATION_EXTENSIONS.contains(extension))
     {
         if (shallow)
         {
@@ -207,15 +207,14 @@ CopyFileToLinkDirResult copyFileToLinkDir(const std::string& file, const std::st
         fileDir += std::filesystem::path::preferred_separator;
     }
 
-    const std::vector<std::string>
-        searchPaths = { fileDir + linkDir, fileDir + "../" + linkDir, fileDir + "../../" + linkDir };
+    const std::vector searchPaths = { fileDir + linkDir, fileDir + "../" + linkDir, fileDir + "../../" + linkDir };
 
     for (const auto& searchPath : searchPaths)
     {
         if (std::filesystem::exists(searchPath))
         {
             const auto copyPath = searchPath + "/" + ien::get_file_name(file);
-            bool targetExists = std::filesystem::exists(copyPath);
+            const bool targetExists = std::filesystem::exists(copyPath);
             try
             {
                 const auto sourceMtime = ien::get_file_mtime(file);
@@ -235,7 +234,7 @@ CopyFileToLinkDirResult copyFileToLinkDir(const std::string& file, const std::st
 
 std::string getFileInfoString(
     const std::string& file,
-    std::variant<const QImage*, const QMovie*, const QMediaPlayer*> currentSource)
+    const std::variant<const QImage*, const QMovie*, const QMediaPlayer*> currentSource)
 {
     std::stringstream sstr;
     sstr << "&nbsp;&nbsp;<b>Filename</b>: <i>" << ien::get_file_name(file) << "</i><br>";
@@ -243,18 +242,18 @@ std::string getFileInfoString(
          << static_cast<float>(std::filesystem::file_size(file)) / 1000000 << "MB</i><br>";
     if (std::holds_alternative<const QMovie*>(currentSource))
     {
-        const QMovie* movie = std::get<const QMovie*>(currentSource);
+        const auto movie = std::get<const QMovie*>(currentSource);
         sstr << "<b>Dimensions</b>: <i>" << movie->currentImage().size().width() << "x"
              << movie->currentImage().size().width() << "</i><br>";
     }
     else if (std::holds_alternative<const QImage*>(currentSource))
     {
-        const QImage* image = std::get<const QImage*>(currentSource);
+        const auto image = std::get<const QImage*>(currentSource);
         sstr << "<b>Dimensions</b>: <i>" << image->width() << "x" << image->height() << "</i><br>";
     }
     else if (std::holds_alternative<const QMediaPlayer*>(currentSource))
     {
-        const QMediaPlayer* player = std::get<const QMediaPlayer*>(currentSource);
+        const auto player = std::get<const QMediaPlayer*>(currentSource);
         if (!player->videoTracks().isEmpty())
         {
             const auto resolution = player->videoTracks()[0].value(QMediaMetaData::Resolution).toSize();
@@ -265,7 +264,7 @@ std::string getFileInfoString(
     return sstr.str();
 }
 
-QFont getTextFont(int size)
+QFont getTextFont(const int size)
 {
     QFont result("Johto Mono", size);
     result.setStyleHint(QFont::TypeWriter, QFont::StyleStrategy::NoAntialias);
@@ -302,13 +301,13 @@ void runCommand(
     }
 }
 
-void disableFocusOnChildWidgets(QWidget* widget)
+void disableFocusOnChildWidgets(const QWidget* widget)
 {
     for (auto& child : widget->children())
     {
-        if (auto* widget = dynamic_cast<QWidget*>(child))
+        if (auto* child_widget = dynamic_cast<QWidget*>(child))
         {
-            widget->setFocusPolicy(Qt::FocusPolicy::NoFocus);
+            child_widget->setFocusPolicy(Qt::FocusPolicy::NoFocus);
         }
     }
 }

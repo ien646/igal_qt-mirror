@@ -69,7 +69,7 @@ VideoControls::VideoControls(QWidget* parent)
     connect(_volume_slider, &ClickableSlider::sliderMoved, this, [this](int pos) {
         pos = std::max(pos, 0);
         const auto position = std::min<float>(static_cast<float>(pos) / _volume_slider->maximum(), 1.0F);
-        emit volumeChanged(position * 100);
+        emit volumeChanged(static_cast<int>(position) * 100);
         _volume_label->setText(QString::fromStdString(std::format("Volume: {}%", static_cast<int>(position * 100))));
         emit volumeSliderMoved();
     });
@@ -87,7 +87,7 @@ VideoControls::VideoControls(QWidget* parent)
     connect(_volume_slider, &ClickableSlider::sliderPressed, this, [this] { emit volumeSliderClicked(); });
     connect(_volume_slider, &ClickableSlider::sliderReleased, this, [this] { emit volumeSliderReleased(); });
 
-    connect(_audio_channel_combo, &QComboBox::currentIndexChanged, this, [this](int index) {
+    connect(_audio_channel_combo, &QComboBox::currentIndexChanged, this, [this](const int index) {
         emit audioChannelChanged(index);
     });
 
@@ -131,9 +131,11 @@ void VideoControls::setCurrentVideoDuration(int64_t ms)
     _current_video_duration = ms;
 }
 
-void VideoControls::setCurrentVideoPosition(int64_t posMs)
+void VideoControls::setCurrentVideoPosition(const int64_t posMs) const
 {
-    _seek_slider->setSliderPosition((static_cast<float>(posMs) / _current_video_duration) * _seek_slider->maximum());
+    const float relative_position = static_cast<float>(posMs) / static_cast<float>(_current_video_duration);
+    const float corrected_position = relative_position * static_cast<float>(_seek_slider->maximum());
+    _seek_slider->setSliderPosition(static_cast<int>(corrected_position));
     updateSeekLabel(posMs);
 }
 
@@ -169,13 +171,13 @@ void VideoControls::setAudioChannelInfo(const std::map<int, std::string>& channe
 
 void VideoControls::updateButtonStyles() const
 {
-    constexpr const char* standard_stylesheet =
+    constexpr auto standard_stylesheet =
         "QLabel{ padding: 2px; border-radius: 2px; background-color: rgba(0, "
         "0, 0, 0); }";
-    constexpr const char* hover_stylesheet =
+    constexpr auto hover_stylesheet =
         "QLabel{ padding: 2px; border-radius: 2px; background-color: "
         "rgba(255,255,255,50); }";
-    constexpr const char* active_stylesheet =
+    constexpr auto active_stylesheet =
         "QLabel{ padding: 2px; border-radius: 2px; background-color: "
         "rgba(255,255,100,150); }";
 
@@ -202,6 +204,7 @@ void VideoControls::updateSeekLabel(const int64_t posMs) const
     const auto m = std::chrono::duration_cast<std::chrono::minutes>(ms);
     const auto h = std::chrono::duration_cast<std::chrono::hours>(ms);
 
-    _seek_position_label->setText(QString::fromStdString(
-        std::format("{:0>2}:{:0>2}:{:0>2}:{:0>2}", h.count() % 100, m.count() % 60, s.count() % 60, (ms.count() % 1000) / 10)));
+    _seek_position_label->setText(
+        QString::fromStdString(
+            std::format("{:0>2}:{:0>2}:{:0>2}:{:0>2}", h.count() % 100, m.count() % 60, s.count() % 60, (ms.count() % 1000) / 10)));
 }

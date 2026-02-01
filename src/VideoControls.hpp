@@ -20,7 +20,7 @@ public:
     void mouseMoveEvent(QMouseEvent* ev) override;
     
     void setCurrentVideoDuration(int64_t ms);
-    void setCurrentVideoPosition(int64_t posMs);
+    void setCurrentVideoPosition(int64_t posMs) const;
 
     void setCurrentVolume(int percent) const;
 
