@@ -5,7 +5,8 @@ echo "Installing igal_qt to $TARGET_DIR"
 read -p "Proceed? (y/N):" -n 1 -r REPLY
 echo ""
 
-if [[ ! $REPLY =~ ^[Yy]$ ]] then
+if [[ ! $REPLY =~ ^[Yy]$ ]]
+then
     exit 1
 fi
 
@@ -22,7 +23,8 @@ sudo mkdir $TARGET_DIR
 
 sudo cp ./bin $TARGET_DIR/bin -r
 
-if [[ ! $REPLY_USE_SYSTEM_LIBS ]] then
+if [[ ! $REPLY_USE_SYSTEM_LIBS ]]
+then
     sudo cp ./lib $TARGET_DIR/lib -r
     sudo cp ./plugins $TARGET_DIR/plugins -r
     sudo cp ./rsc $TARGET_DIR/rsc -r
@@ -30,7 +32,8 @@ else
     sudo rm $TARGET_DIR/bin/qt.conf
 fi
 
-if [[ $REPLY_DESKTOP_ENTRY =~ ^[Yy]$ ]] then
+if [[ $REPLY_DESKTOP_ENTRY =~ ^[Yy]$ ]]
+then
     sudo xdg-desktop-menu install igal_qt.desktop --mode system --novendor
     sudo xdg-desktop-menu forceupdate
 fi
