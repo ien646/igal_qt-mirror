@@ -18,12 +18,12 @@ echo ""
 
 set -x
 
-sudo rm -rf $TARGET_DIR
-sudo mkdir $TARGET_DIR
+sudo rm -rf "$TARGET_DIR"
+sudo mkdir "$TARGET_DIR"
 
 sudo cp ./bin $TARGET_DIR/bin -r
 
-if [[ ! $REPLY_USE_SYSTEM_LIBS ]]
+if [[ ! $REPLY_USE_SYSTEM_LIBS =~ ^[Yy]$ ]]
 then
     sudo cp ./lib $TARGET_DIR/lib -r
     sudo cp ./plugins $TARGET_DIR/plugins -r
