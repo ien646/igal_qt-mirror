@@ -7,9 +7,10 @@
 
 #include <filesystem>
 
-#include "../cmake-build-release/_deps/libien-src/lib/include/ien/bits/str_utils/tolowerupper.hpp"
 #include "Utils.hpp"
-#include "ien/fs_utils.hpp"
+
+#include <ien/str_utils.hpp>
+#include <ien/fs_utils.hpp>
 
 #include <QApplication>
 
