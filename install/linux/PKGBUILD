@@ -1,0 +1,42 @@
+pkgname="igal_qt"
+pkgver=1.12.5
+pkgrel=0
+epoch=0
+
+pkgdesc="Image/Video gallery with tools"
+arch=(any)
+url="https://github.com/ien646/igal_qt"
+license=("AGPL-3.0")
+depends=(
+    'qt6-base'
+    'qt6-multimedia'
+)
+makedepends=(
+    'cmake'
+    'git'
+    'make'
+)
+optdepends=(
+    'kimageformats: JXL support'
+)
+
+source=("https://github.com/ien646/igal_qt-mirror/archive/refs/tags/$pkgver.tar.gz")
+sha512sums=('631eba7fb3253c825995c66fdb91ef97faaa4737d3860080399eb41a6e5ceb9a9c59a72e4acde465a3120ef33baf94c978b01ca0dafe6c18eca24c232b5211bb')
+
+prepare() {
+    cd "igal_qt-mirror-$pkgver"
+    sed -i -e 's/ien646\/libien/ien646\/libien-mirror/g' CMakeLists.txt
+}
+
+build() {
+    mkdir -p "igal_qt-mirror-$pkgver/build"
+    cd "igal_qt-mirror-$pkgver/build"
+    cmake -DCMAKE_BUILD_TYPE=Release ..
+    make -j
+}
+
+package() {
+    cd "igal_qt-mirror-$pkgver/build"
+    mkdir -p "${pkgdir}/usr/local/bin/"
+    sudo cp igal_qt "${pkgdir}/usr/local/bin/igal_qt"
+}
