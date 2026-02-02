@@ -1,10 +1,10 @@
-cmake_minimum_required(VERSION 3.25)
+cmake_minimum_required(VERSION 4.0)
 
 set(PROJECT_NAME igal_qt)
 
 include(cmake/CPM.cmake)
 
-project(igal_qt VERSION 1.11.3)
+project(igal_qt VERSION 1.12.1)
 
 if(WIN32)
     if(DEFINED ENV{QTDIR})
@@ -90,13 +90,22 @@ install(TARGETS ${PROJECT_NAME}
 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-qt_generate_deploy_app_script(
-    TARGET ${PROJECT_NAME}
-    OUTPUT_SCRIPT deploy_script
-    NO_UNSUPPORTED_PLATFORM_ERROR
-    NO_TRANSLATIONS
-    NO_PLUGINS
-)
+if(WIN32)
+    qt_generate_deploy_app_script(
+        TARGET ${PROJECT_NAME}
+        OUTPUT_SCRIPT deploy_script
+        NO_UNSUPPORTED_PLATFORM_ERROR
+        NO_TRANSLATIONS
+    )
+else()
+    qt_generate_deploy_app_script(
+        TARGET ${PROJECT_NAME}
+        OUTPUT_SCRIPT deploy_script
+        NO_UNSUPPORTED_PLATFORM_ERROR
+        NO_TRANSLATIONS
+        NO_PLUGINS # Use system installed plugins (i.e. JXL support)
+    )
+endif()
 install(SCRIPT ${deploy_script})
 
 if(LINUX)
