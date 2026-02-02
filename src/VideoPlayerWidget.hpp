@@ -19,7 +19,7 @@ class VideoPlayerWidget : public QGraphicsView
 public:
     VideoPlayerWidget(QWidget* parent = nullptr);
 
-    void setMedia(const std::string& src);
+    void setMedia(const std::string& src) const;
     void stop();
 
     void paintEvent(QPaintEvent* ev) override;

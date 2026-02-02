@@ -95,7 +95,8 @@ void CachedMediaProxy::deleteOldest()
             oldest = &image;
         }
     }
-    assert(oldest);
+
+    assert(oldest != nullptr);
 
     _currentCacheSize -= oldest->getMemorySize();
     _cached_images.erase(oldest->path());

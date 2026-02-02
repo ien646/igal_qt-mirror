@@ -17,15 +17,19 @@
 #include <unordered_set>
 
 const std::unordered_set<std::string> ANIMATION_EXTENSIONS = { ".gif", ".png", ".webp" };
-const std::unordered_set<std::string> IMAGE_EXTENSIONS = { ".png", ".jpg", ".jpeg", ".webp", ".jxl" };
+const std::unordered_set<std::string> IMAGE_EXTENSIONS = { ".png", ".jpg", ".jpeg", ".webp" };
 const std::unordered_set<std::string> VIDEO_EXTENSIONS = { ".mkv", ".mp4", ".webm", ".mov" };
 
-constexpr const char* APNG_IDAT_STR = "IDAT";
-constexpr const char* APNG_ACTL_STR = "acTL";
-constexpr const char* WEBP_ANIM_STR = "ANIM";
-constexpr const char* WEBP_ANMF_STR = "ANMF";
+constexpr auto JXL_EXTENSION = ".jxl";
+
+constexpr auto APNG_IDAT_STR = "IDAT";
+constexpr auto APNG_ACTL_STR = "acTL";
+constexpr auto WEBP_ANIM_STR = "ANIM";
+constexpr auto WEBP_ANMF_STR = "ANMF";
 
 constexpr auto APNG_CHECK_BUFFER_SIZE = 256;
+
+static const bool JXL_SUPPORT = QImageReader::supportedImageFormats().contains("jxl");
 
 bool isPngAnimated(const std::span<const std::byte> data)
 {
@@ -44,7 +48,7 @@ bool isPngAnimated(const std::span<const std::byte> data)
     return sv.substr(0, idat_pos).find(APNG_ACTL_STR) != std::string_view::npos;
 }
 
-bool isWebpAnimated(std::span<const std::byte> data)
+bool isWebpAnimated(const std::span<const std::byte> data)
 {
     const std::string_view sv(reinterpret_cast<const char*>(data.data()), data.size());
     return sv.find(WEBP_ANIM_STR) != std::string_view::npos && sv.find(WEBP_ANMF_STR) != std::string_view::npos;
@@ -53,7 +57,8 @@ bool isWebpAnimated(std::span<const std::byte> data)
 bool hasMediaExtension(const std::string& path)
 {
     const auto ext = ien::str_tolower(ien::get_file_extension(path));
-    return IMAGE_EXTENSIONS.contains(ext) || ANIMATION_EXTENSIONS.contains(ext) || VIDEO_EXTENSIONS.contains(ext);
+    return IMAGE_EXTENSIONS.contains(ext) || ANIMATION_EXTENSIONS.contains(ext) || VIDEO_EXTENSIONS.contains(ext) ||
+           (JXL_SUPPORT && ext == JXL_EXTENSION);
 }
 
 bool isImage(const std::string& path)
@@ -63,7 +68,7 @@ bool isImage(const std::string& path)
     {
         return false;
     }
-    return IMAGE_EXTENSIONS.contains(ext);
+    return IMAGE_EXTENSIONS.contains(ext) || (JXL_SUPPORT && ext == JXL_EXTENSION);
 }
 
 bool isAnimation(const std::string& path, const bool shallow)

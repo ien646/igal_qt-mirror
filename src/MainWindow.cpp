@@ -496,8 +496,8 @@ void MainWindow::handleStandardInput(const int key)
         {
             _previewStrip = new PreviewStrip(_mediaWidget->cachedMediaProxy(), this);
             _previewStrip->resize(size());
-            connect(this, &MainWindow::resized, _previewStrip, [this](QSize sz) { _previewStrip->resize(sz); });
-            connect(this, &MainWindow::currentIndexChanged, _previewStrip, [this](int64_t index) {
+            connect(this, &MainWindow::resized, _previewStrip, [this](const QSize sz) { _previewStrip->resize(sz); });
+            connect(this, &MainWindow::currentIndexChanged, _previewStrip, [this](const int64_t index) {
                 std::vector<std::string> paths;
                 for (int i = -2; i <= 2; ++i)
                 {
