@@ -13,9 +13,6 @@ fi
 read -p "Create application desktop entry? (Y/n):" -n 1 -r REPLY_DESKTOP_ENTRY
 echo ""
 
-read -p "Use system libs? (Y/n):" -n 1 -r REPLY_USE_SYSTEM_LIBS
-echo ""
-
 set -x
 
 sudo rm -rf "$TARGET_DIR"
@@ -23,14 +20,7 @@ sudo mkdir "$TARGET_DIR"
 
 sudo cp ./bin $TARGET_DIR/bin -r
 
-if [[ ! $REPLY_USE_SYSTEM_LIBS =~ ^[Yy]$ ]]
-then
-    sudo cp ./lib $TARGET_DIR/lib -r
-    sudo cp ./plugins $TARGET_DIR/plugins -r
-    sudo cp ./rsc $TARGET_DIR/rsc -r
-else
-    sudo rm $TARGET_DIR/bin/qt.conf
-fi
+sudo rm $TARGET_DIR/bin/qt.conf
 
 if [[ $REPLY_DESKTOP_ENTRY =~ ^[Yy]$ ]]
 then

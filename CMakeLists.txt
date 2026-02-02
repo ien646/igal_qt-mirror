@@ -4,7 +4,7 @@ set(PROJECT_NAME igal_qt)
 
 include(cmake/CPM.cmake)
 
-project(igal_qt VERSION 1.12.3)
+project(igal_qt VERSION 1.12.4)
 
 if(WIN32)
     if(DEFINED ENV{QTDIR})
@@ -103,7 +103,7 @@ else()
         OUTPUT_SCRIPT deploy_script
         NO_UNSUPPORTED_PLATFORM_ERROR
         NO_TRANSLATIONS
-        NO_PLUGINS # Use system installed plugins (i.e. JXL support)
+        NO_PLUGINS
     )
 endif()
 install(SCRIPT ${deploy_script})
