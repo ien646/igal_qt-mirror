@@ -4,7 +4,7 @@ set(PROJECT_NAME igal_qt)
 
 include(cmake/CPM.cmake)
 
-project(igal_qt VERSION 1.12.5)
+project(igal_qt VERSION 1.12.6)
 
 if(WIN32)
     if(DEFINED ENV{QTDIR})
