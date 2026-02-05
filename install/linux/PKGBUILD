@@ -21,7 +21,7 @@ optdepends=(
 )
 
 source=("https://github.com/ien646/igal_qt-mirror/archive/refs/tags/$pkgver.tar.gz")
-sha512sums=('631eba7fb3253c825995c66fdb91ef97faaa4737d3860080399eb41a6e5ceb9a9c59a72e4acde465a3120ef33baf94c978b01ca0dafe6c18eca24c232b5211bb')
+sha512sums=('deadd911f840c2ee48b514a1d640b904b059e8bb8b757197e8d9b20ba0fc66c4c3dc2eee7c1852974a2f8741ee38eb3184937d6ec8978326b7b00c71e8195014')
 
 prepare() {
     cd "igal_qt-mirror-$pkgver"
